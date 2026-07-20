@@ -1,0 +1,63 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // catch-all rule
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function isValidProject(data) {
+      return data.title is string && data.title.size() <= 200
+          && data.description is string && data.description.size() <= 1000
+          && data.category is string && data.category.size() <= 100
+          && data.tags is list && data.tags.size() <= 20
+          && data.createdAt is int
+          && data.userId is string && data.userId.size() <= 100
+          && data.isPublic is bool;
+    }
+
+    function isValidBlogPost(data) {
+      return data.title is string && data.title.size() <= 200
+          && data.slug is string && data.slug.size() <= 200
+          && data.summary is string && data.summary.size() <= 1000
+          && data.content is string && data.content.size() <= 10000
+          && data.category is string && data.category.size() <= 100
+          && data.tags is list && data.tags.size() <= 20
+          && data.createdAt is int
+          && data.updatedAt is int
+          && data.userId is string && data.userId.size() <= 100
+          && data.authorName is string && data.authorName.size() <= 100
+          && data.isPublished is bool;
+    }
+
+    match /projects/{projectId} {
+      allow read: if true;
+      allow write: if isSignedIn() && isValidProject(incoming());
+    }
+
+    match /blogs/{blogId} {
+      allow read: if true;
+      allow write: if isSignedIn() && isValidBlogPost(incoming());
+    }
+  }
+}

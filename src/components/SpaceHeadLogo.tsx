@@ -1,4 +1,5 @@
 import React from "react";
+import logoImg from "../assets/images/spacehead_logo_permanent.png";
 
 interface SpaceHeadLogoProps {
   className?: string;
@@ -7,13 +8,10 @@ interface SpaceHeadLogoProps {
 
 export default function SpaceHeadLogo({ className = "", size }: SpaceHeadLogoProps) {
   const dimension = size ? (typeof size === "number" ? `${size}px` : size) : undefined;
-  
-  // Use absolute path served from the public/ folder in development and copied to dist/client in production
-  const imgSrc = "/logo.png";
 
   return (
     <img
-      src={imgSrc}
+      src={logoImg}
       alt="SpaceHead AI Logo"
       style={dimension ? { width: dimension, height: dimension } : undefined}
       className={`select-none object-contain ${className}`}

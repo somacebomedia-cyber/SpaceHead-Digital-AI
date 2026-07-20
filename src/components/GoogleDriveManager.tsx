@@ -17,7 +17,8 @@ import {
   CloudCheck, 
   Loader2,
   FileText,
-  Import
+  Import,
+  PlusCircle
 } from "lucide-react";
 import { 
   listDriveFiles, 
@@ -37,17 +38,23 @@ interface GoogleDriveManagerProps {
   projects: Project[];
   blogs: BlogPost[];
   onImportBlog?: (title: string, content: string, summary: string) => void;
+  onImportProject?: (project: Omit<Project, "id">) => Promise<void>;
 }
 
 export default function GoogleDriveManager({ 
   projects, 
   blogs,
-  onImportBlog 
+  onImportBlog,
+  onImportProject
 }: GoogleDriveManagerProps) {
   const [isConnected, setIsConnected] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
+  
+  // Folder Sync State
+  const [folderSyncInput, setFolderSyncInput] = useState("");
+  const [isSyncingFolder, setIsSyncingFolder] = useState(false);
   
   // Navigation stack
   const [folderStack, setFolderStack] = useState<{ id: string; name: string }[]>([
@@ -305,6 +312,137 @@ export default function GoogleDriveManager({
     }
   };
 
+  /**
+   * Import an individual Google Drive file as a portfolio project
+   */
+  const handleImportAsProject = async (file: DriveFile) => {
+    if (!onImportProject) return;
+    setIsLoading(true);
+    setErrorMsg(null);
+    setSuccessMsg(null);
+
+    try {
+      const isVideo = file.mimeType.startsWith("video/") || 
+                      file.name.endsWith(".mp4") || 
+                      file.name.endsWith(".mov") || 
+                      file.name.endsWith(".webm");
+      const isImg = file.mimeType.startsWith("image/") ||
+                    file.name.endsWith(".png") ||
+                    file.name.endsWith(".jpg") ||
+                    file.name.endsWith(".jpeg") ||
+                    file.name.endsWith(".webp");
+
+      const title = file.name
+        .replace(/\.[^/.]+$/, "") // strip extension
+        .replace(/[_-]/g, " ") // replace underscores/dashes with spaces
+        .replace(/\b\w/g, c => c.toUpperCase()); // title case
+
+      // Prevent duplicates
+      const exists = projects.some(p => p.demoUrl?.includes(file.id) || p.title === title);
+      if (exists) {
+        throw new Error(`A project with the title "${title}" or linking to this file already exists in your portfolio.`);
+      }
+
+      const imgUrl = file.thumbnailLink 
+        ? file.thumbnailLink.replace(/=s\d+/, "=s800") 
+        : (isImg && file.webViewLink ? file.webViewLink : "https://images.unsplash.com/photo-1536240478700-b869070f9279?auto=format&fit=crop&q=80&w=800");
+
+      const category = isVideo ? "Animated Videos" : "Graphic Design";
+      const tags = isVideo ? ["Animated Videos", "Promo Reel", "Drive Sync"] : ["Graphic Design", "Brand Assets", "Drive Sync"];
+
+      await onImportProject({
+        title,
+        category,
+        description: `Bespoke high-end digital asset designed for ultimate engagement and visual brilliance. Part of our creative concepts collection, masterfully synchronized directly from Google Drive.`,
+        tags,
+        demoUrl: isVideo ? `https://drive.google.com/file/d/${file.id}/preview` : file.webViewLink,
+        imageUrl: imgUrl,
+        isPublic: true,
+        createdAt: Date.now(),
+        userId: "system"
+      });
+
+      setSuccessMsg(`Successfully imported "${title}" as a portfolio project!`);
+    } catch (err: any) {
+      setErrorMsg(err.message || "Failed to import file as portfolio project.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  /**
+   * Sync all videos in a specified folder ID or URL
+   */
+  const handleSyncFolderId = async (folderIdOrUrl: string) => {
+    if (!onImportProject) return;
+    if (!folderIdOrUrl.trim()) return;
+
+    setIsLoading(true);
+    setErrorMsg(null);
+    setSuccessMsg(null);
+
+    try {
+      // Extract folder ID if they pasted a full Google Drive folder URL
+      let folderId = folderIdOrUrl.trim();
+      const match = folderId.match(/folders\/([a-zA-Z0-9_-]+)/);
+      if (match) {
+        folderId = match[1];
+      }
+
+      const data = await listDriveFiles(folderId);
+      const fetchedFiles = data.files || [];
+
+      // Filter for files with video mime types or video extensions
+      const videoFiles = fetchedFiles.filter(f => 
+        f.mimeType.startsWith("video/") || 
+        f.name.endsWith(".mp4") || 
+        f.name.endsWith(".mov") || 
+        f.name.endsWith(".webm") || 
+        f.name.endsWith(".avi") ||
+        f.name.endsWith(".mkv")
+      );
+
+      if (videoFiles.length === 0) {
+        throw new Error("No video files found in the specified Google Drive folder. Ensure the folder contains video formats (.mp4, .mov, .webm).");
+      }
+
+      let count = 0;
+      for (const file of videoFiles) {
+        const title = file.name
+          .replace(/\.[^/.]+$/, "") // strip extension
+          .replace(/[_-]/g, " ") // replace underscores/dashes with spaces
+          .replace(/\b\w/g, c => c.toUpperCase()); // title case
+
+        const exists = projects.some(p => p.demoUrl?.includes(file.id) || p.title === title);
+        if (exists) continue;
+
+        const imgUrl = file.thumbnailLink 
+          ? file.thumbnailLink.replace(/=s\d+/, "=s800") 
+          : "https://images.unsplash.com/photo-1536240478700-b869070f9279?auto=format&fit=crop&q=80&w=800";
+
+        await onImportProject({
+          title,
+          category: "Animated Videos",
+          description: `Bespoke premium cinematic marketing and video asset designed by SpaceHead Digital AI. Crafted with tailored narrative pacing and optimized for exceptional audience retention.`,
+          tags: ["Animated Videos", "Promo Reel", "Drive Sync"],
+          demoUrl: `https://drive.google.com/file/d/${file.id}/preview`,
+          imageUrl: imgUrl,
+          isPublic: true,
+          createdAt: Date.now(),
+          userId: "system"
+        });
+        count++;
+      }
+
+      setSuccessMsg(`Successfully synced and imported ${count} new video project(s) into your Showcase Portfolio!`);
+      setFolderSyncInput("");
+    } catch (err: any) {
+      setErrorMsg(err.message || "Failed to sync folder. Ensure the folder is public or shared with access, and your connection is fresh.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   // Mime types helper icons
   const getFileIcon = (mimeType: string, name: string) => {
     if (mimeType === "application/vnd.google-apps.folder") {
@@ -442,6 +580,34 @@ export default function GoogleDriveManager({
             </div>
           </div>
 
+          {/* Quick Folder Sync Feature */}
+          <div className="bg-gradient-to-r from-orange-50 to-amber-50 border border-orange-200/60 p-5 rounded-2xl space-y-3 relative overflow-hidden">
+            <div className="absolute top-0 right-0 w-32 h-32 bg-orange-500/5 rounded-full blur-xl pointer-events-none" />
+            <div className="flex items-center space-x-2 text-orange-800">
+              <RefreshCw className="w-4.5 h-4.5 animate-spin animate-duration-[12000ms]" />
+              <h4 className="text-xs font-bold uppercase tracking-wider">Showcase Auto-Sync Folder Engine</h4>
+            </div>
+            <p className="text-xs text-slate-600 leading-relaxed max-w-2xl">
+              Paste any Google Drive Folder URL or ID (like your videos directory) to automatically retrieve, format, and import all video files directly as live project cards in your showcase portfolio!
+            </p>
+            <form onSubmit={(e) => { e.preventDefault(); handleSyncFolderId(folderSyncInput); }} className="flex flex-col sm:flex-row gap-2 max-w-3xl">
+              <input
+                type="text"
+                placeholder="Paste Google Drive Folder link or ID (e.g. https://drive.google.com/drive/folders/...)"
+                value={folderSyncInput}
+                onChange={(e) => setFolderSyncInput(e.target.value)}
+                className="bg-white border border-slate-200 rounded-xl px-4 py-2.5 text-xs focus:outline-none focus:border-orange-500 flex-1 min-w-0 placeholder-slate-400 font-sans"
+              />
+              <button
+                type="submit"
+                disabled={isLoading || !folderSyncInput.trim()}
+                className="px-5 py-2.5 bg-orange-500 hover:bg-orange-600 disabled:bg-slate-300 text-white text-xs font-bold rounded-xl transition-all shadow-sm shrink-0 flex items-center justify-center space-x-1.5"
+              >
+                <span>Import Videos to Portfolio</span>
+              </button>
+            </form>
+          </div>
+
           {/* New Folder Modal Inlined for Cleanliness */}
           {showFolderModal && (
             <div className="p-4 bg-blue-50/50 border border-blue-200 rounded-2xl animate-in slide-in-from-top duration-200 space-y-3">
@@ -549,6 +715,17 @@ export default function GoogleDriveManager({
                         file.name.endsWith(".txt") || 
                         file.name.endsWith(".json")
                       );
+                      const isProjectImportable = !isFolder && !!onImportProject && (
+                        file.mimeType.startsWith("video/") || 
+                        file.mimeType.startsWith("image/") ||
+                        file.name.endsWith(".mp4") || 
+                        file.name.endsWith(".mov") || 
+                        file.name.endsWith(".webm") ||
+                        file.name.endsWith(".png") || 
+                        file.name.endsWith(".jpg") || 
+                        file.name.endsWith(".jpeg") || 
+                        file.name.endsWith(".webp")
+                      );
 
                       return (
                         <tr key={file.id} className="hover:bg-slate-50 transition-colors text-sm text-slate-700">
@@ -577,6 +754,16 @@ export default function GoogleDriveManager({
                             {new Date(file.modifiedTime).toLocaleDateString()}
                           </td>
                           <td className="p-4 pr-5 text-right space-x-1 shrink-0">
+                            {isProjectImportable && (
+                              <button
+                                onClick={() => handleImportAsProject(file)}
+                                className="p-1.5 hover:bg-orange-50 hover:text-orange-600 rounded-lg text-slate-400 transition-colors"
+                                title="Import File as Portfolio Showcase Project"
+                              >
+                                <PlusCircle className="w-4.5 h-4.5" />
+                              </button>
+                            )}
+
                             {isImportable && (
                               <button
                                 onClick={() => handleImportContent(file)}

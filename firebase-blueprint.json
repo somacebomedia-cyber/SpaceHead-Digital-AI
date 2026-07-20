@@ -1,0 +1,51 @@
+{
+  "entities": {
+    "Project": {
+      "title": "Project",
+      "description": "Showcase portfolio project details",
+      "type": "object",
+      "properties": {
+        "title": { "type": "string", "maxLength": 200 },
+        "description": { "type": "string", "maxLength": 1000 },
+        "category": { "type": "string", "maxLength": 100 },
+        "tags": { "type": "array" },
+        "demoUrl": { "type": "string", "maxLength": 500 },
+        "githubUrl": { "type": "string", "maxLength": 500 },
+        "imageUrl": { "type": "string", "maxLength": 500 },
+        "createdAt": { "type": "number" },
+        "userId": { "type": "string", "maxLength": 100 },
+        "isPublic": { "type": "boolean" }
+      },
+      "required": ["title", "description", "category", "tags", "createdAt", "userId", "isPublic"]
+    },
+    "BlogPost": {
+      "title": "BlogPost",
+      "description": "Showcase blog post details",
+      "type": "object",
+      "properties": {
+        "title": { "type": "string", "maxLength": 200 },
+        "slug": { "type": "string", "maxLength": 200 },
+        "summary": { "type": "string", "maxLength": 1000 },
+        "content": { "type": "string", "maxLength": 10000 },
+        "category": { "type": "string", "maxLength": 100 },
+        "tags": { "type": "array" },
+        "createdAt": { "type": "number" },
+        "updatedAt": { "type": "number" },
+        "userId": { "type": "string", "maxLength": 100 },
+        "authorName": { "type": "string", "maxLength": 100 },
+        "isPublished": { "type": "boolean" }
+      },
+      "required": ["title", "slug", "summary", "content", "category", "tags", "createdAt", "updatedAt", "userId", "authorName", "isPublished"]
+    }
+  },
+  "firestore": {
+    "/projects/{projectId}": {
+      "schema": "Project",
+      "description": "Portfolio Projects"
+    },
+    "/blogs/{blogId}": {
+      "schema": "BlogPost",
+      "description": "Portfolio Blog Posts"
+    }
+  }
+}

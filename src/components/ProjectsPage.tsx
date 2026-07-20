@@ -1,13 +1,62 @@
 import { useState, useMemo } from "react";
 import { Project } from "../types";
 import SEO from "./SEO";
-import { Code, Search, ExternalLink, Github, Globe, X, PlusCircle } from "lucide-react";
+import { Code, Search, ExternalLink, Github, Globe, X, PlusCircle, Play } from "lucide-react";
 
 interface ProjectsPageProps {
   projects: Project[];
   onSelectProject: (project: Project) => void;
   selectedProject: Project | null;
   onCloseModal: () => void;
+}
+
+function getEmbedUrl(url?: string): { isVideo: boolean; embedUrl?: string; isDirectVideo?: boolean } {
+  if (!url) return { isVideo: false };
+
+  // Google Drive file link
+  const driveMatch = url.match(/(?:drive\.google\.com\/file\/d\/|drive\.google\.com\/open\?id=|docs\.google\.com\/file\/d\/)([a-zA-Z0-9_-]+)/);
+  if (driveMatch) {
+    return {
+      isVideo: true,
+      embedUrl: `https://drive.google.com/file/d/${driveMatch[1]}/preview`
+    };
+  }
+
+  // YouTube match
+  const ytMatch = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/|youtube\.com\/shorts\/)([a-zA-Z0-9_-]+)/);
+  if (ytMatch) {
+    return {
+      isVideo: true,
+      embedUrl: `https://www.youtube.com/embed/${ytMatch[1]}`
+    };
+  }
+
+  // Vimeo match
+  const vimeoMatch = url.match(/(?:vimeo\.com\/|player\.vimeo\.com\/video\/)([0-9]+)/);
+  if (vimeoMatch) {
+    return {
+      isVideo: true,
+      embedUrl: `https://player.vimeo.com/video/${vimeoMatch[1]}`
+    };
+  }
+
+  // Direct video extensions
+  const cleanUrl = url.toLowerCase().split(/[?#]/)[0];
+  if (
+    cleanUrl.endsWith(".mp4") || 
+    cleanUrl.endsWith(".webm") || 
+    cleanUrl.endsWith(".ogg") || 
+    cleanUrl.endsWith(".mov") ||
+    url.includes("googleusercontent.com/drive-viewer")
+  ) {
+    return {
+      isVideo: true,
+      isDirectVideo: true,
+      embedUrl: url
+    };
+  }
+
+  return { isVideo: false };
 }
 
 export default function ProjectsPage({ 
@@ -85,51 +134,61 @@ export default function ProjectsPage({
       {/* Grid List */}
       {filteredProjects.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          {filteredProjects.map((project) => (
-            <div
-              key={project.id}
-              onClick={() => onSelectProject(project)}
-              className="group bg-white border border-slate-150 rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 cursor-pointer flex flex-col h-full"
-            >
-              <div className="aspect-video w-full overflow-hidden relative bg-slate-100">
-                {project.imageUrl ? (
-                  <img
-                    src={project.imageUrl}
-                    alt={project.title}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                    referrerPolicy="no-referrer"
-                  />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center text-slate-300 bg-slate-50">
-                    <Code className="w-12 h-12" />
+          {filteredProjects.map((project) => {
+            const hasVideo = project.category === "Animated Videos" || getEmbedUrl(project.demoUrl).isVideo;
+            return (
+              <div
+                key={project.id}
+                onClick={() => onSelectProject(project)}
+                className="group bg-white border border-slate-150 rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 cursor-pointer flex flex-col h-full"
+              >
+                <div className="aspect-video w-full overflow-hidden relative bg-slate-100">
+                  {project.imageUrl ? (
+                    <img
+                      src={project.imageUrl}
+                      alt={project.title}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                      referrerPolicy="no-referrer"
+                    />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center text-slate-300 bg-slate-50">
+                      <Code className="w-12 h-12" />
+                    </div>
+                  )}
+                  {hasVideo && (
+                    <div className="absolute inset-0 bg-slate-950/25 group-hover:bg-slate-950/40 flex items-center justify-center transition-colors">
+                      <div className="w-12 h-12 rounded-full bg-white/90 group-hover:bg-orange-500 text-slate-900 group-hover:text-white flex items-center justify-center shadow-lg transform group-hover:scale-110 transition-all duration-300">
+                        <Play className="w-5 h-5 fill-current ml-0.5" />
+                      </div>
+                    </div>
+                  )}
+                  <span className="absolute top-3 left-3 bg-white/90 backdrop-blur-md text-slate-800 text-xs font-semibold px-2.5 py-1 rounded-full shadow-sm">
+                    {project.category}
+                  </span>
+                </div>
+                <div className="p-6 flex-1 flex flex-col justify-between">
+                  <div className="space-y-2">
+                    <h3 className="font-sans font-bold text-lg text-slate-900 group-hover:text-purple-600 transition-colors">
+                      {project.title}
+                    </h3>
+                    <p className="text-xs text-slate-500 line-clamp-3 leading-relaxed">
+                      {project.description}
+                    </p>
                   </div>
-                )}
-                <span className="absolute top-3 left-3 bg-white/90 backdrop-blur-md text-slate-800 text-xs font-semibold px-2.5 py-1 rounded-full shadow-sm">
-                  {project.category}
-                </span>
-              </div>
-              <div className="p-6 flex-1 flex flex-col justify-between">
-                <div className="space-y-2">
-                  <h3 className="font-sans font-bold text-lg text-slate-900 group-hover:text-purple-600 transition-colors">
-                    {project.title}
-                  </h3>
-                  <p className="text-xs text-slate-500 line-clamp-3 leading-relaxed">
-                    {project.description}
-                  </p>
-                </div>
-                <div className="flex flex-wrap gap-1.5 pt-4">
-                  {project.tags.map((tag) => (
-                    <span
-                      key={tag}
-                      className="bg-slate-50 text-slate-600 text-[10px] font-mono px-2 py-0.5 rounded-md border border-slate-100"
-                    >
-                      {tag}
-                    </span>
-                  ))}
+                  <div className="flex flex-wrap gap-1.5 pt-4">
+                    {project.tags.map((tag) => (
+                      <span
+                        key={tag}
+                        className="bg-slate-50 text-slate-600 text-[10px] font-mono px-2 py-0.5 rounded-md border border-slate-100"
+                      >
+                        {tag}
+                      </span>
+                    ))}
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       ) : (
         <div className="text-center py-20 bg-slate-50 rounded-2xl border border-dashed border-slate-200">
@@ -154,21 +213,50 @@ export default function ProjectsPage({
             aria-labelledby="modal-title"
           >
             <div className="relative aspect-video w-full bg-slate-100">
-              {selectedProject.imageUrl ? (
-                <img
-                  src={selectedProject.imageUrl}
-                  alt={selectedProject.title}
-                  className="w-full h-full object-cover"
-                  referrerPolicy="no-referrer"
-                />
-              ) : (
-                <div className="w-full h-full flex items-center justify-center text-slate-300">
-                  <Code className="w-16 h-16" />
-                </div>
-              )}
+              {(() => {
+                const video = getEmbedUrl(selectedProject.demoUrl);
+                if (video.isVideo) {
+                  if (video.isDirectVideo) {
+                    return (
+                      <video 
+                        src={video.embedUrl} 
+                        controls 
+                        autoPlay
+                        className="w-full h-full object-contain bg-black"
+                      />
+                    );
+                  }
+                  return (
+                    <iframe
+                      src={video.embedUrl}
+                      className="w-full h-full border-none"
+                      allow="autoplay; fullscreen; encrypted-media"
+                      allowFullScreen
+                      title={selectedProject.title}
+                    />
+                  );
+                }
+
+                if (selectedProject.imageUrl) {
+                  return (
+                    <img
+                      src={selectedProject.imageUrl}
+                      alt={selectedProject.title}
+                      className="w-full h-full object-cover"
+                      referrerPolicy="no-referrer"
+                    />
+                  );
+                }
+
+                return (
+                  <div className="w-full h-full flex items-center justify-center text-slate-300">
+                    <Code className="w-16 h-16" />
+                  </div>
+                );
+              })()}
               <button
                 onClick={onCloseModal}
-                className="absolute top-4 right-4 p-2 bg-white/95 text-slate-700 hover:bg-slate-100 rounded-full shadow-md transition-colors"
+                className="absolute top-4 right-4 p-2 bg-white/95 text-slate-700 hover:bg-slate-100 rounded-full shadow-md transition-colors z-10"
                 aria-label="Close dialog"
               >
                 <X className="w-4 h-4" />

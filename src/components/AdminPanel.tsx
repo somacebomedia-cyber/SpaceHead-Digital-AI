@@ -861,6 +861,7 @@ export default function AdminPanel({
               setBlogSummary(summary);
               setBlogSlug(title.trim().toLowerCase().replace(/\s+/g, "-"));
             }}
+            onImportProject={onAddProject}
           />
         </div>
       )}

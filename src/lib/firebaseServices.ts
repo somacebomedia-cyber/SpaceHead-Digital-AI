@@ -7,8 +7,7 @@ import {
   doc, 
   query, 
   where, 
-  orderBy, 
-  getFirestore
+  orderBy 
 } from "firebase/firestore";
 import { auth, db } from "./firebase";
 import { Project, BlogPost } from "../types";
@@ -21,6 +20,55 @@ const BLOGS_COLLECTION = "blogs";
 const isClientAndDbReady = () => {
   return typeof window !== "undefined" && db !== null;
 };
+
+// ---------------- FIRESTORE ERROR HANDLING ----------------
+
+export enum OperationType {
+  CREATE = 'create',
+  UPDATE = 'update',
+  DELETE = 'delete',
+  LIST = 'list',
+  GET = 'get',
+  WRITE = 'write',
+}
+
+export interface FirestoreErrorInfo {
+  error: string;
+  operationType: OperationType;
+  path: string | null;
+  authInfo: {
+    userId?: string | null;
+    email?: string | null;
+    emailVerified?: boolean | null;
+    isAnonymous?: boolean | null;
+    tenantId?: string | null;
+    providerInfo?: {
+      providerId?: string | null;
+      email?: string | null;
+    }[];
+  }
+}
+
+export function handleFirestoreError(error: unknown, operationType: OperationType, path: string | null) {
+  const errInfo: FirestoreErrorInfo = {
+    error: error instanceof Error ? error.message : String(error),
+    authInfo: {
+      userId: auth?.currentUser?.uid,
+      email: auth?.currentUser?.email,
+      emailVerified: auth?.currentUser?.emailVerified,
+      isAnonymous: auth?.currentUser?.isAnonymous,
+      tenantId: auth?.currentUser?.tenantId,
+      providerInfo: auth?.currentUser?.providerData?.map(provider => ({
+        providerId: provider.providerId,
+        email: provider.email,
+      })) || []
+    },
+    operationType,
+    path
+  };
+  console.error('Firestore Error: ', JSON.stringify(errInfo));
+  throw new Error(JSON.stringify(errInfo));
+}
 
 // ---------------- PROJECTS SERVICES ----------------
 
@@ -61,7 +109,10 @@ export async function fetchProjects(userId?: string): Promise<Project[]> {
     }
 
     return projects;
-  } catch (error) {
+  } catch (error: any) {
+    if (error?.code === "permission-denied" || error?.message?.includes("permissions")) {
+      handleFirestoreError(error, OperationType.LIST, PROJECTS_COLLECTION);
+    }
     console.warn("Firestore projects fetch failed, using mock data", error);
     return INITIAL_PROJECTS;
   }
@@ -75,8 +126,9 @@ export async function saveProject(project: Omit<Project, "id">): Promise<string>
   try {
     const docRef = await addDoc(collection(db, PROJECTS_COLLECTION), project);
     return docRef.id;
-  } catch (error) {
+  } catch (error: any) {
     console.error("Error writing project to Firestore", error);
+    handleFirestoreError(error, OperationType.CREATE, PROJECTS_COLLECTION);
     throw error;
   }
 }
@@ -86,7 +138,12 @@ export async function modifyProject(id: string, updates: Partial<Project>): Prom
     throw new Error("Firestore is not available.");
   }
   const docRef = doc(db, PROJECTS_COLLECTION, id);
-  await updateDoc(docRef, updates);
+  try {
+    await updateDoc(docRef, updates);
+  } catch (error: any) {
+    console.error("Error updating project in Firestore", error);
+    handleFirestoreError(error, OperationType.UPDATE, `${PROJECTS_COLLECTION}/${id}`);
+  }
 }
 
 export async function removeProject(id: string): Promise<void> {
@@ -94,7 +151,12 @@ export async function removeProject(id: string): Promise<void> {
     throw new Error("Firestore is not available.");
   }
   const docRef = doc(db, PROJECTS_COLLECTION, id);
-  await deleteDoc(docRef);
+  try {
+    await deleteDoc(docRef);
+  } catch (error: any) {
+    console.error("Error deleting project in Firestore", error);
+    handleFirestoreError(error, OperationType.DELETE, `${PROJECTS_COLLECTION}/${id}`);
+  }
 }
 
 // ---------------- BLOGS SERVICES ----------------
@@ -135,7 +197,10 @@ export async function fetchBlogs(userId?: string): Promise<BlogPost[]> {
     }
 
     return blogs;
-  } catch (error) {
+  } catch (error: any) {
+    if (error?.code === "permission-denied" || error?.message?.includes("permissions")) {
+      handleFirestoreError(error, OperationType.LIST, BLOGS_COLLECTION);
+    }
     console.warn("Firestore blogs fetch failed, using mock data", error);
     return INITIAL_BLOGS;
   }
@@ -149,8 +214,9 @@ export async function saveBlog(blog: Omit<BlogPost, "id">): Promise<string> {
   try {
     const docRef = await addDoc(collection(db, BLOGS_COLLECTION), blog);
     return docRef.id;
-  } catch (error) {
+  } catch (error: any) {
     console.error("Error writing blog to Firestore", error);
+    handleFirestoreError(error, OperationType.CREATE, BLOGS_COLLECTION);
     throw error;
   }
 }
@@ -160,7 +226,12 @@ export async function modifyBlog(id: string, updates: Partial<BlogPost>): Promis
     throw new Error("Firestore is not available.");
   }
   const docRef = doc(db, BLOGS_COLLECTION, id);
-  await updateDoc(docRef, updates);
+  try {
+    await updateDoc(docRef, updates);
+  } catch (error: any) {
+    console.error("Error updating blog in Firestore", error);
+    handleFirestoreError(error, OperationType.UPDATE, `${BLOGS_COLLECTION}/${id}`);
+  }
 }
 
 export async function removeBlog(id: string): Promise<void> {
@@ -168,5 +239,10 @@ export async function removeBlog(id: string): Promise<void> {
     throw new Error("Firestore is not available.");
   }
   const docRef = doc(db, BLOGS_COLLECTION, id);
-  await deleteDoc(docRef);
+  try {
+    await deleteDoc(docRef);
+  } catch (error: any) {
+    console.error("Error deleting blog in Firestore", error);
+    handleFirestoreError(error, OperationType.DELETE, `${BLOGS_COLLECTION}/${id}`);
+  }
 }
