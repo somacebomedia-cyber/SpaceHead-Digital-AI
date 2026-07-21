@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useTransition } from "react";
+import { useState, useEffect, useCallback, useTransition, useRef, lazy, Suspense } from "react";
 import { onAuthStateChanged, signOut } from "firebase/auth";
 import { auth } from "./lib/firebase";
 import { Project, BlogPost } from "./types";
@@ -18,17 +18,24 @@ import {
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 import Home from "./components/Home";
-import ServicesPage from "./components/ServicesPage";
-import ProjectsPage from "./components/ProjectsPage";
-import BlogsPage from "./components/BlogsPage";
-import ContactPage from "./components/ContactPage";
-import AuthPage from "./components/AuthPage";
-import AdminPanel from "./components/AdminPanel";
+
+// Lazy-loaded Components for code-splitting
+const ServicesPage = lazy(() => import("./components/ServicesPage"));
+const ProjectsPage = lazy(() => import("./components/ProjectsPage"));
+const BlogsPage = lazy(() => import("./components/BlogsPage"));
+const ContactPage = lazy(() => import("./components/ContactPage"));
+const AuthPage = lazy(() => import("./components/AuthPage"));
+const AdminPanel = lazy(() => import("./components/AdminPanel"));
 
 export default function App() {
   const [currentTab, setCurrentTab] = useState<string>("home");
   const [user, setUser] = useState<any>(null);
   const [authLoading, setAuthLoading] = useState(true);
+
+  const currentTabRef = useRef(currentTab);
+  useEffect(() => {
+    currentTabRef.current = currentTab;
+  }, [currentTab]);
 
   // Core Data Lists
   const [projects, setProjects] = useState<Project[]>(INITIAL_PROJECTS);
@@ -68,13 +75,13 @@ export default function App() {
           photoURL: firebaseUser.photoURL
         });
         // Switch to admin if user lands on auth
-        if (currentTab === "auth") {
+        if (currentTabRef.current === "auth") {
           setCurrentTab("admin");
         }
       } else {
         // If logged out and not on a public page, reset to home
         setUser(null);
-        if (currentTab === "admin") {
+        if (currentTabRef.current === "admin") {
           setCurrentTab("home");
         }
       }
@@ -82,7 +89,7 @@ export default function App() {
     });
 
     return () => unsubscribe();
-  }, [currentTab]);
+  }, []);
 
   // Load projects and blogs based on authentication context and active collections
   const loadWorkspaceData = useCallback(async () => {
@@ -115,8 +122,10 @@ export default function App() {
       }
     } catch (error) {
       console.warn("Failed loading synchronized datasets, falling back to mock layers", error);
-      setProjects(INITIAL_PROJECTS);
-      setBlogs(INITIAL_BLOGS);
+      if (!user) {
+        setProjects(INITIAL_PROJECTS);
+        setBlogs(INITIAL_BLOGS);
+      }
     } finally {
       setDataLoading(false);
     }
@@ -243,64 +252,75 @@ export default function App() {
             </div>
           ) : (
             <div className={isPending ? "opacity-75 transition-opacity" : ""}>
-              {currentTab === "home" && (
-                <Home 
-                  projects={projects} 
-                  blogs={blogs} 
-                  onTabChange={handleTabChange}
-                  onSelectProject={(p) => { setSelectedProject(p); handleTabChange("projects"); }}
-                  onSelectBlog={(b) => { setSelectedBlog(b); handleTabChange("blogs"); }}
-                />
-              )}
+              <Suspense fallback={
+                <div className="flex items-center justify-center min-h-[400px]">
+                  <div className="flex flex-col items-center space-y-4">
+                    <div className="w-10 h-10 rounded-full border-4 border-indigo-600 border-t-transparent animate-spin" />
+                    <span className="text-xs font-semibold text-slate-500 font-mono uppercase tracking-wider">
+                      Loading View...
+                    </span>
+                  </div>
+                </div>
+              }>
+                {currentTab === "home" && (
+                  <Home 
+                    projects={projects} 
+                    blogs={blogs} 
+                    onTabChange={handleTabChange}
+                    onSelectProject={(p) => { setSelectedProject(p); handleTabChange("projects"); }}
+                    onSelectBlog={(b) => { setSelectedBlog(b); handleTabChange("blogs"); }}
+                  />
+                )}
 
-              {currentTab === "services" && (
-                <ServicesPage 
-                  onTabChange={handleTabChange}
-                />
-              )}
+                {currentTab === "services" && (
+                  <ServicesPage 
+                    onTabChange={handleTabChange}
+                  />
+                )}
 
-              {currentTab === "projects" && (
-                <ProjectsPage 
-                  projects={projects} 
-                  onSelectProject={setSelectedProject}
-                  selectedProject={selectedProject}
-                  onCloseModal={() => setSelectedProject(null)}
-                />
-              )}
+                {currentTab === "projects" && (
+                  <ProjectsPage 
+                    projects={projects} 
+                    onSelectProject={setSelectedProject}
+                    selectedProject={selectedProject}
+                    onCloseModal={() => setSelectedProject(null)}
+                  />
+                )}
 
-              {currentTab === "blogs" && (
-                <BlogsPage 
-                  blogs={blogs} 
-                  onSelectBlog={setSelectedBlog}
-                  selectedBlog={selectedBlog}
-                  onCloseBlog={() => setSelectedBlog(null)}
-                />
-              )}
+                {currentTab === "blogs" && (
+                  <BlogsPage 
+                    blogs={blogs} 
+                    onSelectBlog={setSelectedBlog}
+                    selectedBlog={selectedBlog}
+                    onCloseBlog={() => setSelectedBlog(null)}
+                  />
+                )}
 
-              {currentTab === "contact" && (
-                <ContactPage />
-              )}
+                {currentTab === "contact" && (
+                  <ContactPage />
+                )}
 
-              {currentTab === "auth" && (
-                <AuthPage 
-                  onAuthSuccess={(u) => { setUser(u); handleTabChange("admin"); }} 
-                  onEnterDemo={handleEnterDemo}
-                />
-              )}
+                {currentTab === "auth" && (
+                  <AuthPage 
+                    onAuthSuccess={(u) => { setUser(u); handleTabChange("admin"); }} 
+                    onEnterDemo={handleEnterDemo}
+                  />
+                )}
 
-              {currentTab === "admin" && (
-                <AdminPanel 
-                  projects={projects} 
-                  blogs={blogs} 
-                  user={user} 
-                  onAddProject={handleAddProject}
-                  onUpdateProject={handleUpdateProject}
-                  onDeleteProject={handleDeleteProject}
-                  onAddBlog={handleAddBlog}
-                  onUpdateBlog={handleUpdateBlog}
-                  onDeleteBlog={handleDeleteBlog}
-                />
-              )}
+                {currentTab === "admin" && (
+                  <AdminPanel 
+                    projects={projects} 
+                    blogs={blogs} 
+                    user={user} 
+                    onAddProject={handleAddProject}
+                    onUpdateProject={handleUpdateProject}
+                    onDeleteProject={handleDeleteProject}
+                    onAddBlog={handleAddBlog}
+                    onUpdateBlog={handleUpdateBlog}
+                    onDeleteBlog={handleDeleteBlog}
+                  />
+                )}
+              </Suspense>
             </div>
           )}
         </main>

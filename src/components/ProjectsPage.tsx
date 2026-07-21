@@ -140,7 +140,7 @@ export default function ProjectsPage({
               <div
                 key={project.id}
                 onClick={() => onSelectProject(project)}
-                className="group bg-white border border-slate-150 rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 cursor-pointer flex flex-col h-full"
+                className="group bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 cursor-pointer flex flex-col h-full"
               >
                 <div className="aspect-video w-full overflow-hidden relative bg-slate-100">
                   {project.imageUrl ? (

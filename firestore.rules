@@ -31,7 +31,7 @@ service cloud.firestore {
           && data.description is string && data.description.size() <= 1000
           && data.category is string && data.category.size() <= 100
           && data.tags is list && data.tags.size() <= 20
-          && data.createdAt is number
+          && data.createdAt is int
           && data.userId is string && data.userId.size() <= 100
           && data.isPublic is bool;
     }
@@ -43,32 +43,29 @@ service cloud.firestore {
           && data.content is string && data.content.size() <= 10000
           && data.category is string && data.category.size() <= 100
           && data.tags is list && data.tags.size() <= 20
-          && data.createdAt is number
-          && data.updatedAt is number
+          && data.createdAt is int
+          && data.updatedAt is int
           && data.userId is string && data.userId.size() <= 100
           && data.authorName is string && data.authorName.size() <= 100
           && data.isPublished is bool;
     }
 
     match /projects/{projectId} {
-      allow get: if isValidId(projectId);
-      allow list: if true;
-      allow create: if isValidId(projectId) && isSignedIn() && isValidProject(incoming()) && incoming().userId == request.auth.uid;
-      allow update: if isValidId(projectId) && isSignedIn() && isValidProject(incoming()) && existing().userId == request.auth.uid && incoming().userId == existing().userId;
-      allow delete: if isValidId(projectId) && isSignedIn() && existing().userId == request.auth.uid;
+      allow read: if true;
+      allow create: if isSignedIn() && isValidProject(incoming()) && incoming().userId == request.auth.uid;
+      allow update: if isSignedIn() && isValidProject(incoming()) && existing().userId == request.auth.uid && incoming().userId == existing().userId;
+      allow delete: if isSignedIn() && existing().userId == request.auth.uid;
     }
 
     match /blogs/{blogId} {
-      allow get: if isValidId(blogId);
-      allow list: if true;
-      allow create: if isValidId(blogId) && isSignedIn() && isValidBlogPost(incoming()) && incoming().userId == request.auth.uid;
-      allow update: if isValidId(blogId) && isSignedIn() && isValidBlogPost(incoming()) && existing().userId == request.auth.uid && incoming().userId == existing().userId;
-      allow delete: if isValidId(blogId) && isSignedIn() && existing().userId == request.auth.uid;
+      allow read: if true;
+      allow create: if isSignedIn() && isValidBlogPost(incoming()) && incoming().userId == request.auth.uid;
+      allow update: if isSignedIn() && isValidBlogPost(incoming()) && existing().userId == request.auth.uid && incoming().userId == existing().userId;
+      allow delete: if isSignedIn() && existing().userId == request.auth.uid;
     }
 
-    match /settings/{settingsId} {
-      allow get: if isValidId(settingsId) && isSignedIn();
-      allow write: if isValidId(settingsId) && isSignedIn();
+    match /settings/{userId} {
+      allow get, write: if isValidId(userId) && isSignedIn() && request.auth.uid == userId;
     }
   }
 }

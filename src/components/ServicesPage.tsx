@@ -443,7 +443,7 @@ const FAQItem: React.FC<FAQItemProps> = ({ faq }) => {
       <button
         type="button"
         onClick={() => setIsOpen(!isOpen)}
-        className="w-full px-6 py-4.5 flex items-center justify-between text-left font-sans text-xs sm:text-sm font-bold text-slate-900 hover:text-indigo-600 focus:outline-none transition-colors"
+        className="w-full px-6 py-4 flex items-center justify-between text-left font-sans text-xs sm:text-sm font-bold text-slate-900 hover:text-indigo-600 focus:outline-none transition-colors"
       >
         <span className="pr-4 leading-snug">{faq.q}</span>
         {isOpen ? (

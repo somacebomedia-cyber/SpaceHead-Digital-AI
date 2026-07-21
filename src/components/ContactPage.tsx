@@ -195,7 +195,7 @@ export default function ContactPage() {
                 </p>
               </div>
 
-              <div className="bg-slate-50 border border-slate-150 rounded-xl py-3 px-6 inline-block">
+              <div className="bg-slate-50 border border-slate-200 rounded-xl py-3 px-6 inline-block">
                 <span className="text-[10px] text-slate-400 font-mono uppercase block">Proposal Tracking Code</span>
                 <span className="text-base font-black text-slate-900 font-mono tracking-wider">{quoteCode}</span>
               </div>
@@ -327,7 +327,7 @@ export default function ContactPage() {
               </div>
 
               {/* Safety Shield Info */}
-              <div className="bg-slate-50 border border-slate-150 p-3 rounded-xl flex items-start space-x-2.5">
+              <div className="bg-slate-50 border border-slate-200 p-3 rounded-xl flex items-start space-x-2.5">
                 <ShieldCheck className="w-4 h-4 text-indigo-600 mt-0.5 flex-shrink-0" />
                 <p className="text-[10px] text-slate-400 leading-relaxed font-mono">
                   Your specifications are securely protected under NDA workspace terms. We never lease, trade, or share your contact metrics. Built & deployed in South Africa.

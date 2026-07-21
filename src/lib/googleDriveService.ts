@@ -37,6 +37,20 @@ export const getCachedToken = () => {
 };
 
 /**
+ * Trigger clean Google Sign-In without extra scopes (Google Drive / Gmail)
+ */
+export const signInWithGoogle = async (): Promise<any> => {
+  try {
+    const loginProvider = new GoogleAuthProvider();
+    const result = await signInWithPopup(auth, loginProvider);
+    return result.user;
+  } catch (error: any) {
+    console.error("Error signing in with Google:", error);
+    throw error;
+  }
+};
+
+/**
  * Trigger OAuth Sign-In flow with Google to retrieve credentials and cache access token
  */
 export const connectGoogleDrive = async (): Promise<{ user: any; token: string }> => {

@@ -301,7 +301,7 @@ export default function AdminPanel({
         <div className="space-y-10 animate-in fade-in duration-200">
           {/* Quick Info Grid */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-            <div className="bg-white border border-slate-150 p-6 rounded-2xl shadow-sm">
+            <div className="bg-white border border-slate-200 p-6 rounded-2xl shadow-sm">
               <div className="flex justify-between items-center text-slate-400">
                 <span className="text-xs font-bold uppercase tracking-wider">Total Portfolio Items</span>
                 <Settings className="w-4 h-4 text-orange-500" />
@@ -312,7 +312,7 @@ export default function AdminPanel({
               </div>
             </div>
 
-            <div className="bg-white border border-slate-150 p-6 rounded-2xl shadow-sm">
+            <div className="bg-white border border-slate-200 p-6 rounded-2xl shadow-sm">
               <div className="flex justify-between items-center text-slate-400">
                 <span className="text-xs font-bold uppercase tracking-wider">Total Publications</span>
                 <FileText className="w-4 h-4 text-amber-500" />
@@ -323,7 +323,7 @@ export default function AdminPanel({
               </div>
             </div>
 
-            <div className="bg-white border border-slate-150 p-6 rounded-2xl shadow-sm">
+            <div className="bg-white border border-slate-200 p-6 rounded-2xl shadow-sm">
               <div className="flex justify-between items-center text-slate-400">
                 <span className="text-xs font-bold uppercase tracking-wider">Storage Sync Mode</span>
                 <Database className="w-4 h-4 text-emerald-500" />
@@ -337,7 +337,7 @@ export default function AdminPanel({
 
           {/* Charts Row */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <div className="bg-white border border-slate-150 p-6 rounded-2xl shadow-sm flex flex-col h-[320px]">
+            <div className="bg-white border border-slate-200 p-6 rounded-2xl shadow-sm flex flex-col h-[320px]">
               <h3 className="font-sans font-bold text-slate-800 text-sm tracking-wide mb-4">
                 Projects Category Breakdown
               </h3>
@@ -375,7 +375,7 @@ export default function AdminPanel({
               </div>
             </div>
 
-            <div className="bg-white border border-slate-150 p-6 rounded-2xl shadow-sm flex flex-col h-[320px]">
+            <div className="bg-white border border-slate-200 p-6 rounded-2xl shadow-sm flex flex-col h-[320px]">
               <h3 className="font-sans font-bold text-slate-800 text-sm tracking-wide mb-4">
                 Articles Category Distribution
               </h3>
@@ -407,7 +407,7 @@ export default function AdminPanel({
             {!isAddingProject && (
               <button
                 onClick={() => setIsAddingProject(true)}
-                className="flex items-center space-x-1.5 px-4.5 py-2 bg-orange-500 hover:bg-orange-600 text-white text-xs font-bold rounded-xl transition-all shadow-sm"
+                className="flex items-center space-x-1.5 px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white text-xs font-bold rounded-xl transition-all shadow-sm"
               >
                 <Plus className="w-4 h-4" />
                 <span>Create New Project</span>
@@ -417,7 +417,7 @@ export default function AdminPanel({
 
           {isAddingProject ? (
             /* Creation Form */
-            <form onSubmit={handleSaveProject} className="bg-white border border-slate-150 p-6 sm:p-8 rounded-2xl space-y-6">
+            <form onSubmit={handleSaveProject} className="bg-white border border-slate-200 p-6 sm:p-8 rounded-2xl space-y-6">
               <div className="flex justify-between items-center border-b border-slate-100 pb-4">
                 <h3 className="font-sans font-bold text-slate-950">
                   {editingProject ? "Update Portfolio Project" : "Add New Showcase Entry"}
@@ -427,7 +427,7 @@ export default function AdminPanel({
                   onClick={resetProjectForm}
                   className="p-1.5 hover:bg-slate-100 rounded-full text-slate-500 transition-colors"
                 >
-                  <X className="w-4.5 h-4.5" />
+                  <X className="w-5 h-5" />
                 </button>
               </div>
 
@@ -515,13 +515,13 @@ export default function AdminPanel({
                   />
                 </div>
 
-                <div className="sm:col-span-2 flex items-center space-x-3 bg-slate-50 p-3 rounded-xl border border-slate-150">
+                <div className="sm:col-span-2 flex items-center space-x-3 bg-slate-50 p-3 rounded-xl border border-slate-200">
                   <input
                     type="checkbox"
                     id="proj-public"
                     checked={projPublic}
                     onChange={(e) => setProjPublic(e.target.checked)}
-                    className="w-4.5 h-4.5 rounded border-slate-300 text-orange-500 focus:ring-orange-500"
+                    className="w-5 h-5 rounded border-slate-300 text-orange-500 focus:ring-orange-500"
                   />
                   <label htmlFor="proj-public" className="text-xs font-semibold text-slate-700">
                     Publish to Public Portfolio immediately (Visible to guest visitors)
@@ -549,11 +549,11 @@ export default function AdminPanel({
             </form>
           ) : (
             /* Items List */
-            <div className="bg-white border border-slate-150 rounded-2xl overflow-hidden shadow-sm">
+            <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm">
               <div className="overflow-x-auto">
                 <table className="w-full text-left border-collapse">
                   <thead>
-                    <tr className="bg-slate-55 border-b border-slate-150 text-[10px] font-bold text-slate-500 uppercase tracking-wider">
+                    <tr className="bg-slate-50 border-b border-slate-200 text-[10px] font-bold text-slate-500 uppercase tracking-wider">
                       <th className="p-4 pl-6">Details</th>
                       <th className="p-4">Category</th>
                       <th className="p-4">Visibility</th>
@@ -569,7 +569,7 @@ export default function AdminPanel({
                           <div className="text-xs text-slate-400 font-mono truncate">{p.id}</div>
                         </td>
                         <td className="p-4">
-                          <span className="bg-slate-100 text-slate-700 text-xs font-semibold px-2.5 py-1 rounded-md border border-slate-150">
+                          <span className="bg-slate-100 text-slate-700 text-xs font-semibold px-2.5 py-1 rounded-md border border-slate-200">
                             {p.category}
                           </span>
                         </td>
@@ -630,7 +630,7 @@ export default function AdminPanel({
             {!isAddingBlog && (
               <button
                 onClick={() => setIsAddingBlog(true)}
-                className="flex items-center space-x-1.5 px-4.5 py-2 bg-orange-500 hover:bg-orange-600 text-white text-xs font-bold rounded-xl transition-all shadow-sm"
+                className="flex items-center space-x-1.5 px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white text-xs font-bold rounded-xl transition-all shadow-sm"
               >
                 <Plus className="w-4 h-4" />
                 <span>Create New Post</span>
@@ -640,7 +640,7 @@ export default function AdminPanel({
 
           {isAddingBlog ? (
             /* Creation Form */
-            <form onSubmit={handleSaveBlog} className="bg-white border border-slate-150 p-6 sm:p-8 rounded-2xl space-y-6">
+            <form onSubmit={handleSaveBlog} className="bg-white border border-slate-200 p-6 sm:p-8 rounded-2xl space-y-6">
               <div className="flex justify-between items-center border-b border-slate-100 pb-4">
                 <h3 className="font-sans font-bold text-slate-950">
                   {editingBlog ? "Edit Technical Article" : "Write Technical Article"}
@@ -650,7 +650,7 @@ export default function AdminPanel({
                   onClick={resetBlogForm}
                   className="p-1.5 hover:bg-slate-100 rounded-full text-slate-500 transition-colors"
                 >
-                  <X className="w-4.5 h-4.5" />
+                  <X className="w-5 h-5" />
                 </button>
               </div>
 
@@ -728,13 +728,13 @@ export default function AdminPanel({
                   />
                 </div>
 
-                <div className="sm:col-span-2 flex items-center space-x-3 bg-slate-50 p-3 rounded-xl border border-slate-150">
+                <div className="sm:col-span-2 flex items-center space-x-3 bg-slate-50 p-3 rounded-xl border border-slate-200">
                   <input
                     type="checkbox"
                     id="blog-published"
                     checked={blogPublished}
                     onChange={(e) => setBlogPublished(e.target.checked)}
-                    className="w-4.5 h-4.5 rounded border-slate-300 text-orange-500 focus:ring-orange-500"
+                    className="w-5 h-5 rounded border-slate-300 text-orange-500 focus:ring-orange-500"
                   />
                   <label htmlFor="blog-published" className="text-xs font-semibold text-slate-700">
                     Publish article immediately (Visible on guest technical journal)
@@ -762,11 +762,11 @@ export default function AdminPanel({
             </form>
           ) : (
             /* Items List */
-            <div className="bg-white border border-slate-150 rounded-2xl overflow-hidden shadow-sm">
+            <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm">
               <div className="overflow-x-auto">
                 <table className="w-full text-left border-collapse">
                   <thead>
-                    <tr className="bg-slate-55 border-b border-slate-150 text-[10px] font-bold text-slate-500 uppercase tracking-wider">
+                    <tr className="bg-slate-50 border-b border-slate-200 text-[10px] font-bold text-slate-500 uppercase tracking-wider">
                       <th className="p-4 pl-6">Title</th>
                       <th className="p-4">Category</th>
                       <th className="p-4">Status</th>
@@ -782,14 +782,14 @@ export default function AdminPanel({
                           <div className="text-xs text-slate-400 font-mono truncate">/blog/{b.slug}</div>
                         </td>
                         <td className="p-4">
-                          <span className="bg-slate-100 text-slate-700 text-xs font-semibold px-2.5 py-1 rounded-md border border-slate-150">
+                          <span className="bg-slate-100 text-slate-700 text-xs font-semibold px-2.5 py-1 rounded-md border border-slate-200">
                             {b.category}
                           </span>
                         </td>
                         <td className="p-4">
                           {b.isPublished ? (
                             <span className="flex items-center text-xs font-medium text-emerald-600">
-                              <Check className="w-4.5 h-4.5 mr-0.5 shrink-0" />
+                              <Check className="w-5 h-5 mr-0.5 shrink-0" />
                               <span>Published</span>
                             </span>
                           ) : (

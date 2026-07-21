@@ -5,7 +5,7 @@ import {
   Auth
 } from "firebase/auth";
 import { auth } from "../lib/firebase";
-import { connectGoogleDrive } from "../lib/googleDriveService";
+import { signInWithGoogle } from "../lib/googleDriveService";
 import { Mail, Lock, UserPlus, LogIn, AlertCircle, Sparkles } from "lucide-react";
 
 interface AuthPageProps {
@@ -87,7 +87,7 @@ export default function AuthPage({ onAuthSuccess, onEnterDemo }: AuthPageProps) 
     setSuccessMsg(null);
     startTransition(async () => {
       try {
-        const { user } = await connectGoogleDrive();
+        const user = await signInWithGoogle();
         setSuccessMsg("Google Workspace authenticated successfully! Loading your studio...");
         setTimeout(() => {
           onAuthSuccess(user);
@@ -101,7 +101,7 @@ export default function AuthPage({ onAuthSuccess, onEnterDemo }: AuthPageProps) 
 
   return (
     <div id="auth-view" className="max-w-md mx-auto py-12 px-4 sm:px-6">
-      <div className="bg-white border border-slate-150 rounded-3xl p-8 shadow-xl space-y-8 relative overflow-hidden">
+      <div className="bg-white border border-slate-200 rounded-3xl p-8 shadow-xl space-y-8 relative overflow-hidden">
         <div className="absolute -top-24 -left-24 w-48 h-48 bg-orange-500/10 rounded-full blur-2xl pointer-events-none" />
         
         {/* Title details */}
@@ -120,14 +120,14 @@ export default function AuthPage({ onAuthSuccess, onEnterDemo }: AuthPageProps) 
         {/* Alerts / Success */}
         {errorMsg && (
           <div className="flex items-start space-x-2 bg-rose-50 border border-rose-100 text-rose-800 p-3.5 rounded-xl text-xs font-medium">
-            <AlertCircle className="w-4.5 h-4.5 text-rose-600 shrink-0 mt-0.5" />
+            <AlertCircle className="w-5 h-5 text-rose-600 shrink-0 mt-0.5" />
             <span className="leading-snug">{errorMsg}</span>
           </div>
         )}
 
         {successMsg && (
           <div className="flex items-start space-x-2 bg-emerald-50 border border-emerald-100 text-emerald-800 p-3.5 rounded-xl text-xs font-medium">
-            <Sparkles className="w-4.5 h-4.5 text-emerald-600 shrink-0 mt-0.5" />
+            <Sparkles className="w-5 h-5 text-emerald-600 shrink-0 mt-0.5" />
             <span className="leading-snug">{successMsg}</span>
           </div>
         )}
@@ -236,7 +236,7 @@ export default function AuthPage({ onAuthSuccess, onEnterDemo }: AuthPageProps) 
         <button
           id="auth-demo-bypass-btn"
           onClick={onEnterDemo}
-          className="w-full flex items-center justify-center space-x-2 px-5 py-3 bg-amber-50 text-amber-800 border border-amber-250 rounded-xl text-sm font-semibold hover:bg-amber-100 transition-colors shadow-sm"
+          className="w-full flex items-center justify-center space-x-2 px-5 py-3 bg-amber-50 text-amber-800 border border-amber-200 rounded-xl text-sm font-semibold hover:bg-amber-100 transition-colors shadow-sm"
         >
           <Sparkles className="w-4 h-4 text-amber-600" />
           <span>Launch Demo Workspace (No Account)</span>

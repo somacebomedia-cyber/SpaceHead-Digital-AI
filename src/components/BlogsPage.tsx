@@ -163,7 +163,7 @@ export default function BlogsPage({
             {selectedBlog.tags.map((tag) => (
               <span
                 key={tag}
-                className="bg-slate-50 text-slate-600 text-xs font-mono px-3 py-1 rounded-lg border border-slate-150"
+                className="bg-slate-50 text-slate-600 text-xs font-mono px-3 py-1 rounded-lg border border-slate-200"
               >
                 #{tag}
               </span>
@@ -220,7 +220,7 @@ export default function BlogsPage({
                 <div
                   key={blog.id}
                   onClick={() => onSelectBlog(blog)}
-                  className="bg-white border border-slate-150 p-6 sm:p-8 rounded-2xl shadow-sm hover:shadow-md transition-all duration-300 cursor-pointer flex flex-col justify-between h-full group border-l-4 border-l-slate-200 hover:border-l-purple-600"
+                  className="bg-white border border-slate-200 p-6 sm:p-8 rounded-2xl shadow-sm hover:shadow-md transition-all duration-300 cursor-pointer flex flex-col justify-between h-full group border-l-4 border-l-slate-200 hover:border-l-purple-600"
                 >
                   <div className="space-y-4">
                     <div className="flex items-center space-x-2 text-xs font-mono text-slate-400">

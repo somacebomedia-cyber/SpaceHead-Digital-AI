@@ -117,10 +117,7 @@ export async function fetchProjects(userId?: string): Promise<Project[]> {
 
     return projects;
   } catch (error: any) {
-    if (error?.code === "permission-denied" || error?.message?.includes("permissions")) {
-      handleFirestoreError(error, OperationType.LIST, PROJECTS_COLLECTION);
-    }
-    console.warn("Firestore projects fetch failed, using mock data", error);
+    console.warn("Firestore projects fetch failed, using mock fallback:", error);
     return INITIAL_PROJECTS;
   }
 }
@@ -210,10 +207,7 @@ export async function fetchBlogs(userId?: string): Promise<BlogPost[]> {
 
     return blogs;
   } catch (error: any) {
-    if (error?.code === "permission-denied" || error?.message?.includes("permissions")) {
-      handleFirestoreError(error, OperationType.LIST, BLOGS_COLLECTION);
-    }
-    console.warn("Firestore blogs fetch failed, using mock data", error);
+    console.warn("Firestore blogs fetch failed, using mock fallback:", error);
     return INITIAL_BLOGS;
   }
 }
@@ -271,8 +265,12 @@ export async function fetchAppSettings(): Promise<AppSettings | null> {
   if (!isClientAndDbReady()) {
     return null;
   }
+  const userId = auth?.currentUser?.uid;
+  if (!userId) {
+    return null;
+  }
   try {
-    const docRef = doc(db, "settings", "global");
+    const docRef = doc(db, "settings", userId);
     const docSnap = await getDoc(docRef);
     if (docSnap.exists()) {
       return docSnap.data() as AppSettings;
@@ -288,12 +286,16 @@ export async function saveAppSettings(settings: AppSettings): Promise<void> {
   if (!isClientAndDbReady()) {
     throw new Error("Firestore is not available.");
   }
+  const userId = auth?.currentUser?.uid;
+  if (!userId) {
+    throw new Error("User must be signed in to save settings.");
+  }
   try {
-    const docRef = doc(db, "settings", "global");
+    const docRef = doc(db, "settings", userId);
     await setDoc(docRef, settings, { merge: true });
   } catch (error: any) {
     console.error("Error writing settings to Firestore", error);
-    handleFirestoreError(error, OperationType.WRITE, "settings/global");
+    handleFirestoreError(error, OperationType.WRITE, `settings/${userId}`);
     throw error;
   }
 }

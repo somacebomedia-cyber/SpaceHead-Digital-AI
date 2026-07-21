@@ -102,7 +102,7 @@ export default function Navbar({ currentTab, onTabChange, user, onLogout }: Navb
               <button
                 id="nav-item-auth"
                 onClick={() => onTabChange("auth")}
-                className={`flex items-center space-x-1.5 px-4.5 py-2 rounded-lg font-sans text-sm font-medium transition-all duration-200 ${
+                className={`flex items-center space-x-1.5 px-4 py-2 rounded-lg font-sans text-sm font-medium transition-all duration-200 ${
                   currentTab === "auth"
                     ? "bg-slate-900 text-white shadow-sm"
                     : "border border-slate-200 text-slate-700 hover:bg-slate-50"

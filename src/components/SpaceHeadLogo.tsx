@@ -14,7 +14,7 @@ export default function SpaceHeadLogo({ className = "", size }: SpaceHeadLogoPro
       src={logoImg}
       alt="SpaceHead AI Logo"
       style={dimension ? { width: dimension, height: dimension } : undefined}
-      className={`select-none object-contain ${className}`}
+      className={`select-none object-contain block shrink-0 ${className}`}
       referrerPolicy="no-referrer"
     />
   );

@@ -343,7 +343,7 @@ export default function Home({ projects, blogs, onTabChange, onSelectProject, on
                   
                   <button
                     onClick={() => onTabChange("services")}
-                    className={`flex items-center space-x-1.5 px-4.5 py-2 ${item.buttonStyle} rounded-xl text-xs font-bold transition-all duration-300 hover:shadow-lg cursor-pointer`}
+                    className={`flex items-center space-x-1.5 px-4 py-2 ${item.buttonStyle} rounded-xl text-xs font-bold transition-all duration-300 hover:shadow-lg cursor-pointer`}
                   >
                     <span>View Details</span>
                     <ArrowRight className="w-3.5 h-3.5" />
