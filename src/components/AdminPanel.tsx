@@ -1,5 +1,4 @@
 import { useState, useMemo, useTransition, FormEvent } from "react";
-import GoogleDriveManager from "./GoogleDriveManager";
 import GoogleGmailManager from "./GoogleGmailManager";
 import { Project, BlogPost } from "../types";
 import { 
@@ -54,7 +53,7 @@ export default function AdminPanel({
   onUpdateBlog,
   onDeleteBlog
 }: AdminPanelProps) {
-  const [activeSubTab, setActiveSubTab] = useState<"analytics" | "projects" | "blogs" | "drive" | "gmail">("analytics");
+  const [activeSubTab, setActiveSubTab] = useState<"analytics" | "projects" | "blogs" | "gmail">("analytics");
   const [isPending, startTransition] = useTransition();
 
   // Project Editing State
@@ -283,16 +282,6 @@ export default function AdminPanel({
             }`}
           >
             Manage Blog Posts ({blogs.length})
-          </button>
-          <button
-            onClick={() => setActiveSubTab("drive")}
-            className={`text-xs font-semibold px-4 py-2.5 rounded-xl transition-all ${
-              activeSubTab === "drive"
-                ? "bg-white text-slate-900"
-                : "bg-slate-800 text-slate-300 hover:bg-slate-700"
-            }`}
-          >
-            Google Drive Storage
           </button>
           <button
             onClick={() => setActiveSubTab("gmail")}
@@ -843,26 +832,6 @@ export default function AdminPanel({
               </div>
             </div>
           )}
-        </div>
-      )}
-
-      {/* Google Drive Sub Tab */}
-      {activeSubTab === "drive" && (
-        <div className="animate-in fade-in duration-200">
-          <GoogleDriveManager 
-            projects={projects}
-            blogs={blogs}
-            onImportBlog={(title, content, summary) => {
-              // Switch subtab, toggle form open, and populate with parsed content
-              setActiveSubTab("blogs");
-              setIsAddingBlog(true);
-              setBlogTitle(title);
-              setBlogContent(content);
-              setBlogSummary(summary);
-              setBlogSlug(title.trim().toLowerCase().replace(/\s+/g, "-"));
-            }}
-            onImportProject={onAddProject}
-          />
         </div>
       )}
 

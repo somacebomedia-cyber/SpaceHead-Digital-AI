@@ -7,7 +7,9 @@ import {
   doc, 
   query, 
   where, 
-  orderBy 
+  orderBy,
+  getDoc,
+  setDoc
 } from "firebase/firestore";
 import { auth, db } from "./firebase";
 import { Project, BlogPost } from "../types";
@@ -82,14 +84,12 @@ export async function fetchProjects(userId?: string): Promise<Project[]> {
     if (userId) {
       q = query(
         collection(db, PROJECTS_COLLECTION),
-        where("userId", "==", userId),
-        orderBy("createdAt", "desc")
+        where("userId", "==", userId)
       );
     } else {
       q = query(
         collection(db, PROJECTS_COLLECTION),
-        where("isPublic", "==", true),
-        orderBy("createdAt", "desc")
+        where("isPublic", "==", true)
       );
     }
 
@@ -101,6 +101,13 @@ export async function fetchProjects(userId?: string): Promise<Project[]> {
         id: docSnap.id,
         ...data
       } as Project);
+    });
+
+    // Sort in memory by createdAt descending
+    projects.sort((a, b) => {
+      const timeA = typeof a.createdAt === 'number' ? a.createdAt : 0;
+      const timeB = typeof b.createdAt === 'number' ? b.createdAt : 0;
+      return timeB - timeA;
     });
 
     // If Firestore has no items, merge/return standard ones
@@ -171,14 +178,12 @@ export async function fetchBlogs(userId?: string): Promise<BlogPost[]> {
     if (userId) {
       q = query(
         collection(db, BLOGS_COLLECTION),
-        where("userId", "==", userId),
-        orderBy("createdAt", "desc")
+        where("userId", "==", userId)
       );
     } else {
       q = query(
         collection(db, BLOGS_COLLECTION),
-        where("isPublished", "==", true),
-        orderBy("createdAt", "desc")
+        where("isPublished", "==", true)
       );
     }
 
@@ -190,6 +195,13 @@ export async function fetchBlogs(userId?: string): Promise<BlogPost[]> {
         id: docSnap.id,
         ...data
       } as BlogPost);
+    });
+
+    // Sort in memory by createdAt descending
+    blogs.sort((a, b) => {
+      const timeA = typeof a.createdAt === 'number' ? a.createdAt : 0;
+      const timeB = typeof b.createdAt === 'number' ? b.createdAt : 0;
+      return timeB - timeA;
     });
 
     if (blogs.length === 0 && !userId) {
@@ -244,5 +256,44 @@ export async function removeBlog(id: string): Promise<void> {
   } catch (error: any) {
     console.error("Error deleting blog in Firestore", error);
     handleFirestoreError(error, OperationType.DELETE, `${BLOGS_COLLECTION}/${id}`);
+  }
+}
+
+// ---------------- SETTINGS SERVICES ----------------
+
+export interface AppSettings {
+  driveApiKey?: string;
+  videosFolderUrl?: string;
+  graphicsFolderUrl?: string;
+}
+
+export async function fetchAppSettings(): Promise<AppSettings | null> {
+  if (!isClientAndDbReady()) {
+    return null;
+  }
+  try {
+    const docRef = doc(db, "settings", "global");
+    const docSnap = await getDoc(docRef);
+    if (docSnap.exists()) {
+      return docSnap.data() as AppSettings;
+    }
+    return null;
+  } catch (error: any) {
+    console.warn("Firestore fetchAppSettings failed, ignoring", error);
+    return null;
+  }
+}
+
+export async function saveAppSettings(settings: AppSettings): Promise<void> {
+  if (!isClientAndDbReady()) {
+    throw new Error("Firestore is not available.");
+  }
+  try {
+    const docRef = doc(db, "settings", "global");
+    await setDoc(docRef, settings, { merge: true });
+  } catch (error: any) {
+    console.error("Error writing settings to Firestore", error);
+    handleFirestoreError(error, OperationType.WRITE, "settings/global");
+    throw error;
   }
 }

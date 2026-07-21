@@ -122,13 +122,13 @@ export default function App() {
     }
   }, [user]);
 
-  // Trigger content loading whenever user profile changes
+  // Trigger content loading whenever user profile changes and auth has resolved
   useEffect(() => {
-    // Only load if not server-side
-    if (typeof window !== "undefined") {
+    // Only load if not server-side and auth initialization is complete
+    if (typeof window !== "undefined" && !authLoading) {
       loadWorkspaceData();
     }
-  }, [user, loadWorkspaceData]);
+  }, [user, authLoading, loadWorkspaceData]);
 
   // Handle logout
   const handleLogout = async () => {

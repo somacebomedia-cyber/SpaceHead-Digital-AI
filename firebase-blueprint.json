@@ -36,6 +36,16 @@
         "isPublished": { "type": "boolean" }
       },
       "required": ["title", "slug", "summary", "content", "category", "tags", "createdAt", "updatedAt", "userId", "authorName", "isPublished"]
+    },
+    "Settings": {
+      "title": "Settings",
+      "description": "App settings for Google Drive Sync",
+      "type": "object",
+      "properties": {
+        "driveApiKey": { "type": "string", "maxLength": 200 },
+        "videosFolderUrl": { "type": "string", "maxLength": 500 },
+        "graphicsFolderUrl": { "type": "string", "maxLength": 500 }
+      }
     }
   },
   "firestore": {
@@ -46,6 +56,10 @@
     "/blogs/{blogId}": {
       "schema": "BlogPost",
       "description": "Portfolio Blog Posts"
+    },
+    "/settings/{settingsId}": {
+      "schema": "Settings",
+      "description": "App settings for Google Drive Sync"
     }
   }
 }

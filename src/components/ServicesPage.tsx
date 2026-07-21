@@ -422,36 +422,42 @@ export default function ServicesPage({ onTabChange }: ServicesPageProps) {
               q: "How do I get started with SpaceHead AI?",
               a: "Simply click any of the 'Configure' buttons on this page, or navigate to our 'Contact' tab. Fill in your high-level brief and phone details, and our desk will generate a custom tracking code and contact you within 2 hours."
             }
-          ].map((faq, index) => {
-            const [isOpen, setIsOpen] = useState(false);
-            return (
-              <div 
-                key={index}
-                className="bg-white border border-slate-100 rounded-2xl overflow-hidden shadow-sm hover:border-slate-200 transition-all"
-              >
-                <button
-                  type="button"
-                  onClick={() => setIsOpen(!isOpen)}
-                  className="w-full px-6 py-4.5 flex items-center justify-between text-left font-sans text-xs sm:text-sm font-bold text-slate-900 hover:text-indigo-600 focus:outline-none transition-colors"
-                >
-                  <span className="pr-4 leading-snug">{faq.q}</span>
-                  {isOpen ? (
-                    <ChevronUp className="w-4 h-4 text-indigo-500 flex-shrink-0" />
-                  ) : (
-                    <ChevronDown className="w-4 h-4 text-slate-400 flex-shrink-0" />
-                  )}
-                </button>
-                {isOpen && (
-                  <div className="px-6 pb-5 text-xs text-slate-500 leading-relaxed border-t border-slate-50/50 pt-3 bg-slate-50/30 animate-fade-in font-sans">
-                    {faq.a}
-                  </div>
-                )}
-              </div>
-            );
-          })}
+          ].map((faq, index) => (
+            <FAQItem key={index} faq={faq} />
+          ))}
         </div>
       </div>
 
     </div>
   );
 }
+
+interface FAQItemProps {
+  faq: { q: string; a: string };
+}
+
+const FAQItem: React.FC<FAQItemProps> = ({ faq }) => {
+  const [isOpen, setIsOpen] = useState(false);
+  return (
+    <div className="bg-white border border-slate-100 rounded-2xl overflow-hidden shadow-sm hover:border-slate-200 transition-all">
+      <button
+        type="button"
+        onClick={() => setIsOpen(!isOpen)}
+        className="w-full px-6 py-4.5 flex items-center justify-between text-left font-sans text-xs sm:text-sm font-bold text-slate-900 hover:text-indigo-600 focus:outline-none transition-colors"
+      >
+        <span className="pr-4 leading-snug">{faq.q}</span>
+        {isOpen ? (
+          <ChevronUp className="w-4 h-4 text-indigo-500 flex-shrink-0" />
+        ) : (
+          <ChevronDown className="w-4 h-4 text-slate-400 flex-shrink-0" />
+        )}
+      </button>
+      {isOpen && (
+        <div className="px-6 pb-5 text-xs text-slate-500 leading-relaxed border-t border-slate-50/50 pt-3 bg-slate-50/30 animate-fade-in font-sans">
+          {faq.a}
+        </div>
+      )}
+    </div>
+  );
+};
+
