@@ -1,7 +1,7 @@
 import { useState, useMemo } from "react";
 import { Project } from "../types";
 import SEO from "./SEO";
-import { Code, Search, ExternalLink, Github, Globe, X, PlusCircle, Play } from "lucide-react";
+import { Code, Search, ExternalLink, Github, Globe, X, PlusCircle, Play, Maximize2 } from "lucide-react";
 
 interface ProjectsPageProps {
   projects: Project[];
@@ -10,16 +10,20 @@ interface ProjectsPageProps {
   onCloseModal: () => void;
 }
 
-function getEmbedUrl(url?: string): { isVideo: boolean; embedUrl?: string; isDirectVideo?: boolean } {
+function getEmbedUrl(url?: string, category?: string): { isVideo: boolean; embedUrl?: string; isDirectVideo?: boolean } {
   if (!url) return { isVideo: false };
+
+  const isAnimatedVideoCat = category === "Animated Videos";
 
   // Google Drive file link
   const driveMatch = url.match(/(?:drive\.google\.com\/file\/d\/|drive\.google\.com\/open\?id=|docs\.google\.com\/file\/d\/)([a-zA-Z0-9_-]+)/);
   if (driveMatch) {
-    return {
-      isVideo: true,
-      embedUrl: `https://drive.google.com/file/d/${driveMatch[1]}/preview`
-    };
+    if (isAnimatedVideoCat || url.includes("/preview")) {
+      return {
+        isVideo: true,
+        embedUrl: `https://drive.google.com/file/d/${driveMatch[1]}/preview`
+      };
+    }
   }
 
   // YouTube match
@@ -46,8 +50,7 @@ function getEmbedUrl(url?: string): { isVideo: boolean; embedUrl?: string; isDir
     cleanUrl.endsWith(".mp4") || 
     cleanUrl.endsWith(".webm") || 
     cleanUrl.endsWith(".ogg") || 
-    cleanUrl.endsWith(".mov") ||
-    url.includes("googleusercontent.com/drive-viewer")
+    cleanUrl.endsWith(".mov")
   ) {
     return {
       isVideo: true,
@@ -67,6 +70,7 @@ export default function ProjectsPage({
 }: ProjectsPageProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All");
+  const [isFullscreen, setIsFullscreen] = useState(false);
 
   const categories = useMemo(() => {
     const cats = new Set(projects.map((p) => p.category));
@@ -135,7 +139,7 @@ export default function ProjectsPage({
       {filteredProjects.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {filteredProjects.map((project) => {
-            const hasVideo = project.category === "Animated Videos" || getEmbedUrl(project.demoUrl).isVideo;
+            const hasVideo = project.category === "Animated Videos" && getEmbedUrl(project.demoUrl, project.category).isVideo;
             return (
               <div
                 key={project.id}
@@ -205,16 +209,16 @@ export default function ProjectsPage({
 
       {/* Dynamic Detail Modal */}
       {selectedProject && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-slate-900/70 backdrop-blur-sm">
           <div 
-            className="bg-white rounded-3xl max-w-2xl w-full overflow-hidden shadow-2xl border border-slate-100 animate-in fade-in zoom-in duration-200"
+            className="bg-white rounded-2xl sm:rounded-3xl max-w-2xl w-full max-h-[92vh] overflow-y-auto shadow-2xl border border-slate-100 animate-in fade-in zoom-in duration-200"
             role="dialog"
             aria-modal="true"
             aria-labelledby="modal-title"
           >
-            <div className="relative aspect-video w-full bg-slate-100">
+            <div className="relative aspect-video w-full bg-slate-950">
               {(() => {
-                const video = getEmbedUrl(selectedProject.demoUrl);
+                const video = getEmbedUrl(selectedProject.demoUrl, selectedProject.category);
                 if (video.isVideo) {
                   if (video.isDirectVideo) {
                     return (
@@ -242,7 +246,8 @@ export default function ProjectsPage({
                     <img
                       src={selectedProject.imageUrl}
                       alt={selectedProject.title}
-                      className="w-full h-full object-cover"
+                      className="w-full h-full object-contain bg-slate-900 cursor-pointer"
+                      onClick={() => setIsFullscreen(true)}
                       referrerPolicy="no-referrer"
                     />
                   );
@@ -254,16 +259,27 @@ export default function ProjectsPage({
                   </div>
                 );
               })()}
+
+              {/* Fullscreen Trigger Button */}
               <button
-                onClick={onCloseModal}
-                className="absolute top-4 right-4 p-2 bg-white/95 text-slate-700 hover:bg-slate-100 rounded-full shadow-md transition-colors z-10"
+                onClick={() => setIsFullscreen(true)}
+                className="absolute top-3 left-3 px-3 py-1.5 bg-slate-900/80 hover:bg-slate-900 text-white text-xs font-semibold rounded-full shadow-md backdrop-blur-md transition-all flex items-center space-x-1.5 z-10"
+                title="Expand Full Screen"
+              >
+                <Maximize2 className="w-3.5 h-3.5" />
+                <span>Full Screen</span>
+              </button>
+
+              <button
+                onClick={() => { setIsFullscreen(false); onCloseModal(); }}
+                className="absolute top-3 right-3 p-2 bg-white/95 text-slate-700 hover:bg-slate-100 rounded-full shadow-md transition-colors z-10"
                 aria-label="Close dialog"
               >
                 <X className="w-4 h-4" />
               </button>
             </div>
 
-            <div className="p-6 sm:p-8 space-y-6">
+            <div className="p-5 sm:p-8 space-y-6">
               <div className="space-y-2">
                 <div className="flex items-center space-x-2">
                   <span className="bg-purple-50 text-purple-700 text-xs font-semibold px-2.5 py-1 rounded-full border border-purple-100">
@@ -273,12 +289,12 @@ export default function ProjectsPage({
                     {new Date(selectedProject.createdAt).toLocaleDateString()}
                   </span>
                 </div>
-                <h2 id="modal-title" className="text-2xl font-sans font-extrabold text-slate-900">
+                <h2 id="modal-title" className="text-xl sm:text-2xl font-sans font-extrabold text-slate-900">
                   {selectedProject.title}
                 </h2>
               </div>
 
-              <p className="text-sm text-slate-600 leading-relaxed font-sans">
+              <p className="text-xs sm:text-sm text-slate-600 leading-relaxed font-sans">
                 {selectedProject.description}
               </p>
 
@@ -294,30 +310,104 @@ export default function ProjectsPage({
               </div>
 
               <div className="flex flex-col sm:flex-row gap-3 pt-4 border-t border-slate-100">
+                <button
+                  onClick={() => setIsFullscreen(true)}
+                  className="flex-1 flex items-center justify-center space-x-2 px-5 py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-xl text-xs sm:text-sm font-bold transition-colors shadow-sm"
+                >
+                  <Maximize2 className="w-4 h-4" />
+                  <span>View Full Screen</span>
+                </button>
+
                 {selectedProject.demoUrl && (
                   <a
                     href={selectedProject.demoUrl}
                     target="_blank"
                     rel="noreferrer noopener"
-                    className="flex-1 flex items-center justify-center space-x-2 px-5 py-3 bg-slate-900 text-white rounded-xl text-sm font-semibold hover:bg-slate-800 transition-colors"
+                    className="flex-1 flex items-center justify-center space-x-2 px-5 py-3 bg-slate-900 text-white rounded-xl text-xs sm:text-sm font-semibold hover:bg-slate-800 transition-colors"
                   >
                     <Globe className="w-4 h-4" />
-                    <span>Launch Live Demo</span>
-                  </a>
-                )}
-                {selectedProject.githubUrl && (
-                  <a
-                    href={selectedProject.githubUrl}
-                    target="_blank"
-                    rel="noreferrer noopener"
-                    className="flex-1 flex items-center justify-center space-x-2 px-5 py-3 bg-white text-slate-700 border border-slate-200 rounded-xl text-sm font-semibold hover:bg-slate-50 transition-colors"
-                  >
-                    <Github className="w-4 h-4" />
-                    <span>View Repository</span>
+                    <span>Open Drive / Web Link</span>
                   </a>
                 )}
               </div>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Full Screen Dedicated Lightbox/Media Overlay (Mobile & Desktop) */}
+      {isFullscreen && selectedProject && (
+        <div className="fixed inset-0 z-[100] bg-black/95 flex flex-col justify-between items-center p-3 sm:p-6 animate-in fade-in duration-200">
+          <div className="w-full max-w-6xl flex items-center justify-between py-2 px-2 text-white z-20">
+            <div>
+              <h3 className="text-sm sm:text-base font-bold font-sans line-clamp-1">{selectedProject.title}</h3>
+              <p className="text-[10px] sm:text-xs text-slate-400 font-mono">{selectedProject.category}</p>
+            </div>
+            <button
+              onClick={() => setIsFullscreen(false)}
+              className="p-2.5 bg-white/10 hover:bg-white/20 text-white rounded-full transition-colors flex items-center space-x-1"
+              aria-label="Exit Fullscreen"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
+
+          <div className="flex-1 w-full max-w-6xl flex items-center justify-center my-auto overflow-hidden relative">
+            {(() => {
+              const video = getEmbedUrl(selectedProject.demoUrl, selectedProject.category);
+              if (video.isVideo) {
+                if (video.isDirectVideo) {
+                  return (
+                    <video 
+                      src={video.embedUrl} 
+                      controls 
+                      autoPlay
+                      className="w-full h-full max-h-[88vh] object-contain rounded-xl"
+                    />
+                  );
+                }
+                return (
+                  <iframe
+                    src={video.embedUrl}
+                    className="w-full h-full max-h-[88vh] aspect-video border-none rounded-xl"
+                    allow="autoplay; fullscreen; encrypted-media"
+                    allowFullScreen
+                    title={selectedProject.title}
+                  />
+                );
+              }
+
+              if (selectedProject.imageUrl) {
+                return (
+                  <img
+                    src={selectedProject.imageUrl}
+                    alt={selectedProject.title}
+                    className="max-w-full max-h-[88vh] object-contain rounded-xl shadow-2xl"
+                    referrerPolicy="no-referrer"
+                  />
+                );
+              }
+
+              return (
+                <div className="w-full h-full flex items-center justify-center text-slate-500">
+                  <Code className="w-16 h-16" />
+                </div>
+              );
+            })()}
+          </div>
+
+          <div className="w-full max-w-6xl flex justify-center py-2 z-20">
+            {selectedProject.demoUrl && (
+              <a
+                href={selectedProject.demoUrl}
+                target="_blank"
+                rel="noreferrer noopener"
+                className="px-4 py-2 bg-white/10 hover:bg-white/20 text-white text-xs font-semibold rounded-xl backdrop-blur-md transition-colors flex items-center space-x-1.5"
+              >
+                <Globe className="w-3.5 h-3.5" />
+                <span>Open Original Drive File</span>
+              </a>
+            )}
           </div>
         </div>
       )}

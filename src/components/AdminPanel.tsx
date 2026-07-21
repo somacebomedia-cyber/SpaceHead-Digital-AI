@@ -1,5 +1,6 @@
 import { useState, useMemo, useTransition, FormEvent } from "react";
 import GoogleGmailManager from "./GoogleGmailManager";
+import GoogleDriveManager from "./GoogleDriveManager";
 import { Project, BlogPost } from "../types";
 import { 
   BarChart, 
@@ -53,7 +54,7 @@ export default function AdminPanel({
   onUpdateBlog,
   onDeleteBlog
 }: AdminPanelProps) {
-  const [activeSubTab, setActiveSubTab] = useState<"analytics" | "projects" | "blogs" | "gmail">("analytics");
+  const [activeSubTab, setActiveSubTab] = useState<"analytics" | "projects" | "blogs" | "gmail" | "drive">("analytics");
   const [isPending, startTransition] = useTransition();
 
   // Project Editing State
@@ -292,6 +293,16 @@ export default function AdminPanel({
             }`}
           >
             Gmail Workspace
+          </button>
+          <button
+            onClick={() => setActiveSubTab("drive")}
+            className={`text-xs font-semibold px-4 py-2.5 rounded-xl transition-all ${
+              activeSubTab === "drive"
+                ? "bg-white text-slate-900"
+                : "bg-slate-800 text-slate-300 hover:bg-slate-700"
+            }`}
+          >
+            Google Drive
           </button>
         </div>
       </div>
@@ -839,6 +850,24 @@ export default function AdminPanel({
       {activeSubTab === "gmail" && (
         <div className="animate-in fade-in duration-200">
           <GoogleGmailManager />
+        </div>
+      )}
+
+      {/* Drive Workspace Sub Tab */}
+      {activeSubTab === "drive" && (
+        <div className="animate-in fade-in duration-200">
+          <GoogleDriveManager 
+            projects={projects}
+            blogs={blogs}
+            onImportBlog={(title, content, summary) => {
+              setBlogTitle(title);
+              setBlogContent(content);
+              setBlogSummary(summary);
+              setActiveSubTab("blogs");
+              setIsAddingBlog(true);
+            }}
+            onImportProject={onAddProject}
+          />
         </div>
       )}
     </div>

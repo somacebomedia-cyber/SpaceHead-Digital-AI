@@ -1,8 +1,10 @@
 import { signInWithPopup, GoogleAuthProvider } from "firebase/auth";
 import { auth } from "./firebase";
 
-// Build Google OAuth Provider with Gmail permissions
+// Build Google OAuth Provider with Drive and Gmail permissions
 const provider = new GoogleAuthProvider();
+provider.addScope("https://www.googleapis.com/auth/drive");
+provider.addScope("https://www.googleapis.com/auth/drive.file");
 provider.addScope("https://mail.google.com/");
 provider.addScope("https://www.googleapis.com/auth/gmail.send");
 provider.addScope("https://www.googleapis.com/auth/gmail.readonly");
@@ -37,7 +39,7 @@ export const getCachedToken = () => {
 };
 
 /**
- * Trigger clean Google Sign-In without extra scopes (Google Drive / Gmail)
+ * Trigger clean Google Sign-In without extra scopes
  */
 export const signInWithGoogle = async (): Promise<any> => {
   try {
@@ -51,7 +53,7 @@ export const signInWithGoogle = async (): Promise<any> => {
 };
 
 /**
- * Trigger OAuth Sign-In flow with Google to retrieve credentials and cache access token
+ * Trigger OAuth Sign-In flow with Google to retrieve Drive scopes and cache access token
  */
 export const connectGoogleDrive = async (): Promise<{ user: any; token: string }> => {
   try {
@@ -61,9 +63,209 @@ export const connectGoogleDrive = async (): Promise<{ user: any; token: string }
       cachedAccessToken = credential.accessToken;
       return { user: result.user, token: credential.accessToken };
     }
-    throw new Error("Failed to retrieve Google credentials from Auth result.");
+    throw new Error("Failed to retrieve Google Drive credentials from Auth result.");
   } catch (error: any) {
-    console.error("Error connecting Google authentication:", error);
+    console.error("Error connecting Google Drive:", error);
     throw error;
   }
+};
+
+/**
+ * List files inside a specific Google Drive directory (Authenticated Pathway 2)
+ */
+export const listDriveFiles = async (
+  folderId: string = "root",
+  search?: string
+): Promise<{ files: DriveFile[] }> => {
+  const token = getCachedToken();
+  if (!token) throw new Error("Google Drive access token not available. Please connect first.");
+
+  let q = `'${folderId}' in parents and trashed = false`;
+  if (search) {
+    q += ` and name contains '${search.replace(/'/g, "\\'")}'`;
+  }
+
+  const url = new URL("https://www.googleapis.com/drive/v3/files");
+  url.searchParams.append("q", q);
+  url.searchParams.append("fields", "files(id, name, mimeType, size, modifiedTime, webViewLink, thumbnailLink, iconLink)");
+  url.searchParams.append("orderBy", "folder,name");
+  url.searchParams.append("pageSize", "100");
+
+  const res = await fetch(url.toString(), {
+    headers: { Authorization: `Bearer ${token}` }
+  });
+
+  if (!res.ok) {
+    const err = await res.json();
+    throw new Error(err.error?.message || "Failed to query Google Drive files.");
+  }
+
+  return res.json();
+};
+
+/**
+ * List files inside a public Google Drive folder without authentication (Pathway 1)
+ */
+export const listPublicDriveFiles = async (
+  folderId: string
+): Promise<{ files: DriveFile[] }> => {
+  const url = `/api/drive/public-folder?folderId=${encodeURIComponent(folderId)}`;
+  const res = await fetch(url);
+  if (!res.ok) {
+    const err = await res.json();
+    throw new Error(err.error || "Failed to query public Google Drive files.");
+  }
+  return res.json();
+};
+
+/**
+ * Create a new folder on Google Drive
+ */
+export const createDriveFolder = async (
+  name: string,
+  parentId: string = "root"
+): Promise<DriveFile> => {
+  const token = getCachedToken();
+  if (!token) throw new Error("Google Drive access token not available.");
+
+  const res = await fetch("https://www.googleapis.com/drive/v3/files", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${token}`,
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      name,
+      mimeType: "application/vnd.google-apps.folder",
+      parents: [parentId]
+    })
+  });
+
+  if (!res.ok) {
+    const err = await res.json();
+    throw new Error(err.error?.message || "Failed to create folder in Google Drive.");
+  }
+
+  return res.json();
+};
+
+/**
+ * Delete a file or folder from Google Drive
+ */
+export const deleteDriveFile = async (fileId: string): Promise<void> => {
+  const token = getCachedToken();
+  if (!token) throw new Error("Google Drive access token not available.");
+
+  const res = await fetch(`https://www.googleapis.com/drive/v3/files/${fileId}`, {
+    method: "DELETE",
+    headers: { Authorization: `Bearer ${token}` }
+  });
+
+  if (!res.ok) {
+    const err = await res.json();
+    throw new Error(err.error?.message || "Failed to delete file from Google Drive.");
+  }
+};
+
+/**
+ * Upload a standard file binary to Google Drive using multipart upload
+ */
+export const uploadDriveFile = async (
+  file: File,
+  parentId: string = "root"
+): Promise<DriveFile> => {
+  const token = getCachedToken();
+  if (!token) throw new Error("Google Drive access token not available.");
+
+  const metadata = {
+    name: file.name,
+    parents: [parentId]
+  };
+
+  const form = new FormData();
+  form.append(
+    "metadata",
+    new Blob([JSON.stringify(metadata)], { type: "application/json" })
+  );
+  form.append("file", file);
+
+  const res = await fetch(
+    "https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id,name,mimeType,size,modifiedTime,webViewLink",
+    {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`
+      },
+      body: form
+    }
+  );
+
+  if (!res.ok) {
+    const err = await res.json();
+    throw new Error(err.error?.message || "Failed to upload file to Google Drive.");
+  }
+
+  return res.json();
+};
+
+/**
+ * Save JSON configuration or database backups directly to Google Drive
+ */
+export const uploadJsonToDrive = async (
+  filename: string,
+  content: any,
+  parentId: string = "root"
+): Promise<DriveFile> => {
+  const token = getCachedToken();
+  if (!token) throw new Error("Google Drive access token not available.");
+
+  const metadata = {
+    name: filename,
+    mimeType: "application/json",
+    parents: [parentId]
+  };
+
+  const blob = new Blob([JSON.stringify(content, null, 2)], { type: "application/json" });
+  const form = new FormData();
+  form.append(
+    "metadata",
+    new Blob([JSON.stringify(metadata)], { type: "application/json" })
+  );
+  form.append("file", blob);
+
+  const res = await fetch(
+    "https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id,name,mimeType,size,modifiedTime,webViewLink",
+    {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`
+      },
+      body: form
+    }
+  );
+
+  if (!res.ok) {
+    const err = await res.json();
+    throw new Error(err.error?.message || "Failed to save data backup to Google Drive.");
+  }
+
+  return res.json();
+};
+
+/**
+ * Retrieve text or JSON content from a specific Google Drive file
+ */
+export const getDriveFileContent = async (fileId: string): Promise<string> => {
+  const token = getCachedToken();
+  if (!token) throw new Error("Google Drive access token not available.");
+
+  const res = await fetch(`https://www.googleapis.com/drive/v3/files/${fileId}?alt=media`, {
+    headers: { Authorization: `Bearer ${token}` }
+  });
+
+  if (!res.ok) {
+    throw new Error("Failed to fetch file content from Google Drive.");
+  }
+
+  return res.text();
 };

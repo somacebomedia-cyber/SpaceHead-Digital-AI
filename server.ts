@@ -15,6 +15,66 @@ async function startServer() {
   const app = express();
   const PORT = 3000;
 
+  app.use(express.json());
+
+  // API Route for Public Google Drive Folder Scraping (Pathway 1)
+  app.get("/api/drive/public-folder", async (req, res) => {
+    const folderId = req.query.folderId as string;
+    if (!folderId) {
+      return res.status(400).json({ error: "Missing folderId query parameter" });
+    }
+    const url = `https://drive.google.com/drive/folders/${folderId}`;
+    try {
+      const response = await fetch(url, {
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36'
+        }
+      });
+      if (!response.ok) {
+        throw new Error(`Google Drive returned status ${response.status}`);
+      }
+      const html = await response.text();
+      
+      const cleanHtml = html
+        .replace(/\\x22/g, '"')
+        .replace(/\\x5b/g, '[')
+        .replace(/\\x5d/g, ']')
+        .replace(/\\x2f/g, '/')
+        .replace(/\\u0022/g, '"')
+        .replace(/\\u005b/g, '[')
+        .replace(/\\u005d/g, ']');
+
+      const regex = /\["([a-zA-Z0-9_-]{28,})",\["([a-zA-Z0-9_-]{28,})"\],"([^"]+)","([^"]+)"/g;
+      let match;
+      const files: any[] = [];
+      const seenIds = new Set();
+
+      while ((match = regex.exec(cleanHtml)) !== null) {
+        const fileId = match[1];
+        const folderIdMatch = match[2];
+        const name = match[3];
+        const mimeType = match[4].replace(/\\/g, ''); // Clean escaped slashes in mime-type e.g. image\/png -> image/png
+        
+        if (!seenIds.has(fileId)) {
+          seenIds.add(fileId);
+          files.push({
+            id: fileId,
+            name,
+            mimeType,
+            modifiedTime: new Date().toISOString(),
+            webViewLink: `https://drive.google.com/file/d/${fileId}/view`,
+            thumbnailLink: `https://lh3.googleusercontent.com/d/${fileId}=w800-h800`,
+            iconLink: "https://ssl.gstatic.com/docs/doclist/images/icon_10_generic_list.png"
+          });
+        }
+      }
+      res.json({ files });
+    } catch (error: any) {
+      console.error("Public Drive scraping error:", error);
+      res.status(500).json({ error: error.message || "Failed to fetch or parse folder" });
+    }
+  });
+
   let vite: any;
 
   if (process.env.NODE_ENV !== "production") {
