@@ -1,0 +1,6 @@
+{
+  "name": "SpaceHead AI",
+  "description": "High-performance marketing portals, technical blogs, and portfolio tools by SpaceHead AI, integrated with Google Drive workspace capabilities and secure backup sync.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

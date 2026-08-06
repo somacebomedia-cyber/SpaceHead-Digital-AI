@@ -1,0 +1,217 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Space Grotesk", sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+
+  /* Custom 3D Pastel Animations */
+  --animate-float-slow: float-slow 7s ease-in-out infinite;
+  --animate-float-medium: float-medium 5s ease-in-out infinite;
+  --animate-float-fast: float-fast 3.5s ease-in-out infinite;
+  --animate-orbit-slow: orbit-slow 25s linear infinite;
+  --animate-pulse-slow: pulse-slow 5s ease-in-out infinite;
+  --animate-twinkle-1: twinkle-1 3s ease-in-out infinite;
+  --animate-twinkle-2: twinkle-2 4s ease-in-out infinite;
+  --animate-shimmer-slow: shimmer-slow 8s linear infinite;
+
+  @keyframes float-slow {
+    0%, 100% { transform: translateY(0px) rotate(0deg); }
+    50% { transform: translateY(-12px) rotate(3deg); }
+  }
+  @keyframes float-medium {
+    0%, 100% { transform: translateY(0px) rotate(0deg); }
+    50% { transform: translateY(-7px) rotate(-3deg); }
+  }
+  @keyframes float-fast {
+    0%, 100% { transform: translateY(0px) rotate(0deg); }
+    50% { transform: translateY(-5px) rotate(1.5deg); }
+  }
+  @keyframes orbit-slow {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+  @keyframes pulse-slow {
+    0%, 100% { opacity: 0.45; transform: scale(1); }
+    50% { opacity: 0.75; transform: scale(1.08); }
+  }
+  @keyframes twinkle-1 {
+    0%, 100% { opacity: 0.2; transform: scale(0.8) rotate(0deg); }
+    50% { opacity: 1; transform: scale(1.2) rotate(45deg); }
+  }
+  @keyframes twinkle-2 {
+    0%, 100% { opacity: 0.9; transform: scale(1.1) rotate(15deg); }
+    50% { opacity: 0.3; transform: scale(0.7) rotate(-15deg); }
+  }
+  @keyframes shimmer-slow {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+  }
+}
+
+/* ==========================================================================
+   LIQUID GLASS BUTTON SYSTEM (Preserving Colors)
+   ========================================================================== */
+
+/* Base liquid glass properties applied to content UI buttons (excluding top header & navbar elements) */
+button:not(.btn-plain):not(.text-link):not(.btn-flat):not(nav button):not(header button):not(#app-navbar button),
+.liquid-glass-btn {
+  position: relative !important;
+  isolation: isolate !important;
+  overflow: hidden !important;
+  backdrop-filter: blur(12px) saturate(180%) !important;
+  -webkit-backdrop-filter: blur(12px) saturate(180%) !important;
+
+  /* Specular top border light reflection & 3D translucent depth shadow */
+  border-top-color: rgba(255, 255, 255, 0.45) !important;
+  box-shadow: 
+    inset 0 1px 1.5px 0 rgba(255, 255, 255, 0.45),
+    inset 0 -1.5px 3px 0 rgba(0, 0, 0, 0.25),
+    0 4px 16px -2px rgba(15, 23, 42, 0.15) !important;
+
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1),
+              box-shadow 0.25s ease,
+              filter 0.25s ease,
+              background-color 0.25s ease,
+              border-color 0.25s ease !important;
+}
+
+/* Ensure all child elements (icons, text, badges, spinners) render sharp on top of gloss */
+button:not(.btn-plain):not(.text-link):not(.btn-flat):not(nav button):not(header button):not(#app-navbar button) > *,
+.liquid-glass-btn > * {
+  position: relative;
+  z-index: 10;
+}
+
+/* Specular Upper Gloss Sheen Overlay */
+button:not(.btn-plain):not(.text-link):not(.btn-flat):not(nav button):not(header button):not(#app-navbar button)::before,
+.liquid-glass-btn::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 48%;
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.32) 0%,
+    rgba(255, 255, 255, 0.06) 75%,
+    rgba(255, 255, 255, 0) 100%
+  );
+  border-top-left-radius: inherit;
+  border-top-right-radius: inherit;
+  pointer-events: none;
+  transition: opacity 0.25s ease;
+  z-index: 1;
+}
+
+/* Sweep Reflection Ray on Hover */
+button:not(.btn-plain):not(.text-link):not(.btn-flat):not(nav button):not(header button):not(#app-navbar button)::after,
+.liquid-glass-btn::after {
+  content: "";
+  position: absolute;
+  top: -60%;
+  left: -60%;
+  width: 220%;
+  height: 220%;
+  background: linear-gradient(
+    60deg,
+    transparent 35%,
+    rgba(255, 255, 255, 0.35) 50%,
+    transparent 65%
+  );
+  transform: translateX(-100%);
+  transition: transform 0.65s cubic-bezier(0.16, 1, 0.3, 1);
+  pointer-events: none;
+  z-index: 2;
+}
+
+button:not(.btn-plain):not(.text-link):not(.btn-flat):not(nav button):not(header button):not(#app-navbar button):hover::after,
+.liquid-glass-btn:hover::after {
+  transform: translateX(100%);
+}
+
+/* Hover Dynamics */
+button:not(.btn-plain):not(.text-link):not(.btn-flat):not(nav button):not(header button):not(#app-navbar button):hover,
+.liquid-glass-btn:hover {
+  filter: brightness(1.1) contrast(1.02) !important;
+  transform: translateY(-1.5px) scale(1.02) !important;
+  box-shadow: 
+    inset 0 1px 2.5px 0 rgba(255, 255, 255, 0.7),
+    inset 0 -1.5px 3px 0 rgba(0, 0, 0, 0.2),
+    0 10px 25px -3px rgba(15, 23, 42, 0.22) !important;
+}
+
+/* Active Press State */
+button:not(.btn-plain):not(.text-link):not(.btn-flat):not(nav button):not(header button):not(#app-navbar button):active,
+.liquid-glass-btn:active {
+  transform: translateY(1px) scale(0.975) !important;
+  filter: brightness(0.95) !important;
+  box-shadow: 
+    inset 0 1.5px 4px 0 rgba(0, 0, 0, 0.35),
+    inset 0 0 1px 0 rgba(255, 255, 255, 0.2),
+    0 2px 8px -1px rgba(15, 23, 42, 0.12) !important;
+}
+
+/* Refined reflection for light/white content buttons */
+button.bg-white:not(nav button):not(header button),
+button.bg-slate-50:not(nav button):not(header button),
+button.bg-slate-100:not(nav button):not(header button) {
+  box-shadow: 
+    inset 0 1px 1.5px 0 rgba(255, 255, 255, 0.9),
+    inset 0 -1px 2px 0 rgba(0, 0, 0, 0.08),
+    0 4px 14px -2px rgba(15, 23, 42, 0.08) !important;
+}
+
+/* Transparent / Subtle icon buttons get soft liquid glass container on hover */
+button.bg-transparent:not(:hover):not(nav button):not(header button),
+button.bg-none:not(:hover):not(nav button):not(header button) {
+  box-shadow: none !important;
+  border-top-color: transparent !important;
+}
+button.bg-transparent:not(:hover):not(nav button):not(header button)::before,
+button.bg-none:not(:hover):not(nav button):not(header button)::before {
+  opacity: 0;
+}
+button.bg-transparent:hover:not(nav button):not(header button)::before,
+button.bg-none:hover:not(nav button):not(header button)::before {
+  opacity: 1;
+}
+
+/* Explicit flat styling reset for nav and header buttons */
+nav button,
+header button,
+.btn-flat {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  filter: none !important;
+  transform: none !important;
+}
+
+nav button::before,
+nav button::after,
+header button::before,
+header button::after,
+.btn-flat::before,
+.btn-flat::after {
+  display: none !important;
+  content: none !important;
+}
+
+/* Scrollbar styling for a high-end feel */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(148, 163, 184, 0.3);
+  border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(148, 163, 184, 0.5);
+}
+
