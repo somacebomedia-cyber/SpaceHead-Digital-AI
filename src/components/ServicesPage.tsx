@@ -38,18 +38,18 @@ const MAIN_SERVICES: ServiceCardData[] = [
     id: "web-design",
     title: "Premium Website Design",
     category: "Web Development",
-    badge: "SAVE 56% UPFRONT • R400 SETUP PLAN",
-    description: "Bespoke high-performance desktop & mobile experiences. Pay R3,499 upfront for full ownership (SAVE 56% / Save R4,500 off the standard R7,999 value), OR start with an easy R400 setup fee + R150/mo subscription paid over 50 months.",
-    price: "R400",
+    badge: "SAVE 56% UPFRONT • R399 SETUP PLAN",
+    description: "Bespoke high-performance desktop & mobile experiences. Pay R3,499 upfront for full ownership (SAVE 56% / Save R4,500 off the standard R7,999 value), OR start with an easy R399 setup fee + R150/mo subscription paid over 50 months.",
+    price: "R399",
     originalPrice: "R7,999",
     period: "setup + R150/mo (or R3,499 once-off)",
-    amountRands: 400,
+    amountRands: 399,
     image: "https://lh3.googleusercontent.com/d/1nLpdWKVSUSvAh2JrtsP7EfKGUIkH6ym6=w1000",
     accent: "indigo",
     featured: true,
     features: [
       "Save 56% (Save R4,500) when paying R3,499 upfront",
-      "OR R400 setup fee + R150/mo over 50 months (R7,999 value)",
+      "OR R399 setup fee + R150/mo over 50 months (R7,999 value)",
       "Complete custom bespoke responsive architecture",
       "Data-light mobile mechanics for low data usage",
       "Local Google SEO & 24/7 cloud server maintenance"
@@ -79,17 +79,17 @@ const MAIN_SERVICES: ServiceCardData[] = [
     id: "vibe-coding",
     title: "AI App Vibe Coding",
     category: "Web Development",
-    badge: "SAVE 55% UPFRONT • R400 SETUP PLAN",
-    description: "Turn your business idea or workflow into a living web/mobile app in record time. Pay R8,999 upfront for full ownership (SAVE 55% / Save R11,000 off standard R19,999 value), OR start with an easy R400 setup + R150/mo subscription paid over 130 months.",
-    price: "R400",
+    badge: "SAVE 55% UPFRONT • R399 SETUP PLAN",
+    description: "Turn your business idea or workflow into a living web/mobile app in record time. Pay R8,999 upfront for full ownership (SAVE 55% / Save R11,000 off standard R19,999 value), OR start with an easy R399 setup + R150/mo subscription paid over 130 months.",
+    price: "R399",
     originalPrice: "R19,999",
     period: "setup + R150/mo (or R8,999 once-off)",
-    amountRands: 400,
+    amountRands: 399,
     image: "https://lh3.googleusercontent.com/d/17U_APICMOCc44uJCSl6PkHReYuijxThu=w1000",
     accent: "emerald",
     features: [
       "Save 55% (Save R11,000) when paying R8,999 upfront",
-      "OR R400 setup fee + R150/mo over 130 months (R19,999 value)",
+      "OR R399 setup fee + R150/mo over 130 months (R19,999 value)",
       "Rapid prototyping and custom application MVPs",
       "Clean structural full-stack code layout",
       "Interactive dashboards & database-connected state"
@@ -138,6 +138,21 @@ export default function ServicesPage({ onTabChange }: ServicesPageProps) {
       }
     }
   }, []);
+
+  // Listen for Escape key to easily close Configure Build modal
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        setPlanModalService(null);
+      }
+    };
+    if (planModalService) {
+      window.addEventListener("keydown", handleKeyDown);
+    }
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [planModalService]);
 
   const handlePayfastCheckout = async (title: string, amountRands: number, id: string, desc?: string) => {
     setPayingItem(id);
@@ -264,104 +279,118 @@ export default function ServicesPage({ onTabChange }: ServicesPageProps) {
         ))}
       </div>
 
-      {/* Plan Selection Modal for R400 Setup vs Full Upfront */}
+      {/* Plan Selection Modal for R399 Setup vs Full Upfront */}
       {planModalService && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md animate-fade-in">
-          <div className="bg-slate-900 border border-slate-800 rounded-3xl max-w-lg w-full p-6 sm:p-8 space-y-6 text-white shadow-2xl relative overflow-hidden">
-            <button
-              onClick={() => setPlanModalService(null)}
-              className="absolute top-4 right-4 text-slate-400 hover:text-white p-1 rounded-full bg-slate-800/60 transition-colors cursor-pointer"
-            >
-              <XCircle className="w-6 h-6" />
-            </button>
-
-            <div className="space-y-2">
-              <span className="text-[10px] font-mono font-bold uppercase tracking-widest text-indigo-400 bg-indigo-500/10 px-3 py-1 rounded-full border border-indigo-500/20 inline-block">
-                Choose Payment Option
-              </span>
-              <h3 className="text-xl sm:text-2xl font-display font-extrabold text-white">
-                {planModalService.title}
-              </h3>
-              <p className="text-xs text-slate-300">
-                Pick the payment schedule that fits your budget best. Both plans include full custom design & build quality.
-              </p>
+        <div
+          onClick={() => setPlanModalService(null)}
+          className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-slate-950/85 backdrop-blur-md animate-fade-in overflow-y-auto"
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            className="bg-slate-900/90 border border-slate-800 rounded-3xl max-w-xl w-full p-5 sm:p-7 text-white shadow-2xl space-y-5 my-auto max-h-[92vh] overflow-y-auto relative"
+          >
+            {/* Sticky/Fixed Exit Header */}
+            <div className="flex items-start justify-between gap-3 border-b border-slate-800/80 pb-3.5 sticky -top-5 bg-slate-900/95 backdrop-blur-md pt-1 z-20">
+              <div>
+                <span className="text-[10px] font-mono font-bold uppercase tracking-widest text-indigo-400 bg-indigo-500/10 px-2.5 py-0.5 rounded-full border border-indigo-500/20 inline-block mb-1">
+                  Configure Build • Select Payment Plan
+                </span>
+                <h3 className="text-lg sm:text-2xl font-display font-extrabold text-white leading-tight">
+                  {planModalService.title}
+                </h3>
+              </div>
+              <button
+                onClick={() => setPlanModalService(null)}
+                title="Close Modal (Esc)"
+                className="flex items-center space-x-1 px-3 py-1.5 rounded-full bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700 transition-all cursor-pointer flex-shrink-0 text-xs font-bold shadow-md"
+              >
+                <span>Close</span>
+                <XCircle className="w-4 h-4 text-rose-400" />
+              </button>
             </div>
 
-            <div className="space-y-3">
-              {/* Option 1: Starter Easy Access (R400 Setup + R150/mo Subscription Payoff) */}
-              <div className="bg-gradient-to-br from-indigo-950/80 to-slate-900 border-2 border-indigo-500/60 p-5 rounded-2xl space-y-3 relative overflow-hidden shadow-lg">
-                <div className="absolute -right-8 -top-8 w-24 h-24 bg-indigo-500/20 rounded-full blur-xl pointer-events-none" />
-                <div className="flex items-start justify-between">
-                  <div>
-                    <span className="bg-indigo-500 text-white text-[9px] font-mono font-extrabold uppercase px-2 py-0.5 rounded-full inline-block mb-1">
-                      ⭐ Most Popular / Easy Monthly Payoff
+            <p className="text-xs text-slate-300 leading-relaxed">
+              Choose the payment option that fits your cash flow best. Both plans guarantee full bespoke engineering, high-compression optimization, and production-ready quality.
+            </p>
+
+            <div className="space-y-4">
+              {/* Option 1: Glassmorphic Starter Easy Access (R399 Setup + R150/mo Subscription Payoff) */}
+              <div className="bg-slate-900/60 backdrop-blur-xl border border-indigo-500/40 rounded-2xl p-4 sm:p-5 space-y-3.5 relative overflow-hidden shadow-[0_8px_32px_0_rgba(99,102,241,0.15)] group">
+                <div className="absolute -right-10 -top-10 w-28 h-28 bg-indigo-500/15 rounded-full blur-2xl pointer-events-none group-hover:bg-indigo-500/25 transition-all" />
+                
+                <div className="space-y-2">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <span className="bg-indigo-500/20 text-indigo-300 border border-indigo-400/30 text-[10px] font-mono font-extrabold uppercase px-2.5 py-1 rounded-full whitespace-nowrap inline-flex items-center">
+                      ⭐ Most Popular / Monthly Payoff
                     </span>
-                    <h4 className="font-bold text-sm text-white">Starter Setup & Subscription Plan</h4>
+                    <div className="text-right">
+                      <span className="text-xl sm:text-2xl font-display font-black text-indigo-300">R399</span>
+                      <span className="text-[11px] text-slate-400 font-mono ml-1">+ R150/mo</span>
+                    </div>
                   </div>
-                  <div className="text-right">
-                    <span className="text-xl font-display font-black text-indigo-300">R400</span>
-                    <span className="block text-[10px] text-slate-400 font-mono">+ R150/mo</span>
-                  </div>
+                  <h4 className="font-bold text-base text-white">Starter Setup & Subscription Plan</h4>
                 </div>
 
-                <ul className="text-[11px] text-slate-300 space-y-1.5 font-sans">
-                  <li className="flex items-start space-x-1.5">
-                    <CheckCircle2 className="w-3.5 h-3.5 text-indigo-400 flex-shrink-0 mt-0.5" />
-                    <span><strong>R400 setup fee</strong> due today to launch your custom design build immediately.</span>
+                <ul className="text-xs text-slate-300 space-y-2 font-sans">
+                  <li className="flex items-start space-x-2">
+                    <CheckCircle2 className="w-4 h-4 text-indigo-400 flex-shrink-0 mt-0.5" />
+                    <span><strong>R399 setup fee</strong> due today to launch your custom design build immediately.</span>
                   </li>
-                  <li className="flex items-start space-x-1.5">
-                    <CheckCircle2 className="w-3.5 h-3.5 text-indigo-400 flex-shrink-0 mt-0.5" />
+                  <li className="flex items-start space-x-2">
+                    <CheckCircle2 className="w-4 h-4 text-indigo-400 flex-shrink-0 mt-0.5" />
                     <span>
-                      <strong>R150/month subscription</strong> pays off the full standard value of{" "}
+                      <strong>R150/month subscription</strong> pays off full valuation of{" "}
                       <strong className="text-indigo-200">
                         {planModalService.id === "web-design" ? "R7,999 (over 50 months)" : "R19,999 (over 130 months)"}
                       </strong>.
                     </span>
                   </li>
-                  <li className="flex items-start space-x-1.5">
-                    <CheckCircle2 className="w-3.5 h-3.5 text-indigo-400 flex-shrink-0 mt-0.5" />
-                    <span>Includes 24/7 active cloud hosting, SSL security & technical care for the duration.</span>
+                  <li className="flex items-start space-x-2">
+                    <CheckCircle2 className="w-4 h-4 text-indigo-400 flex-shrink-0 mt-0.5" />
+                    <span>Includes 24/7 active cloud hosting, SSL security & technical care.</span>
                   </li>
                 </ul>
 
                 <button
                   onClick={() =>
                     handlePayfastCheckout(
-                      `${planModalService.title} (Starter Setup R400 + R150/mo)`,
-                      400,
+                      `${planModalService.title} (Starter Setup R399 + R150/mo)`,
+                      399,
                       planModalService.id,
-                      `R400 setup fee + R150/mo maintenance subscription for ${planModalService.title}`
+                      `R399 setup fee + R150/mo maintenance subscription for ${planModalService.title}`
                     )
                   }
-                  className="w-full flex items-center justify-center space-x-2 py-3 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-bold transition-all shadow-md cursor-pointer"
+                  className="w-full flex items-center justify-center space-x-2 py-3 bg-gradient-to-r from-indigo-600 to-indigo-500 hover:from-indigo-500 hover:to-indigo-400 text-white rounded-xl text-xs sm:text-sm font-bold transition-all shadow-lg hover:shadow-indigo-500/25 cursor-pointer"
                 >
                   <CreditCard className="w-4 h-4" />
-                  <span>Pay R400 Setup Fee via Payfast</span>
+                  <span>Pay R399 Setup Fee via Payfast</span>
                 </button>
               </div>
 
-              {/* Option 2: Full Upfront Ownership with Percentage Savings */}
-              <div className="bg-slate-800/80 border border-emerald-500/50 p-5 rounded-2xl space-y-3 relative overflow-hidden">
-                <div className="flex items-start justify-between">
-                  <div>
-                    <span className="bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-[9px] font-mono font-extrabold uppercase px-2 py-0.5 rounded-full inline-block mb-1">
+              {/* Option 2: Glassmorphic Full Upfront Ownership with Percentage Savings */}
+              <div className="bg-slate-900/60 backdrop-blur-xl border border-emerald-500/40 rounded-2xl p-4 sm:p-5 space-y-3.5 relative overflow-hidden shadow-[0_8px_32px_0_rgba(16,185,129,0.15)] group">
+                <div className="absolute -right-10 -top-10 w-28 h-28 bg-emerald-500/15 rounded-full blur-2xl pointer-events-none group-hover:bg-emerald-500/25 transition-all" />
+
+                <div className="space-y-2">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <span className="bg-emerald-500/20 text-emerald-300 border border-emerald-400/30 text-[10px] font-mono font-extrabold uppercase px-2.5 py-1 rounded-full whitespace-nowrap inline-flex items-center">
                       {planModalService.id === "web-design" ? "🔥 SAVE 56% (SAVE R4,500)" : "🔥 SAVE 55% (SAVE R11,000)"}
                     </span>
-                    <h4 className="font-bold text-sm text-white">Full Upfront Ownership Payment</h4>
+                    <div className="text-right flex items-baseline space-x-1.5">
+                      <span className="text-xl sm:text-2xl font-display font-black text-emerald-400">
+                        {planModalService.id === "web-design" ? "R3,499" : "R8,999"}
+                      </span>
+                      <span className="text-[11px] text-slate-400 font-mono line-through">
+                        {planModalService.id === "web-design" ? "R7,999" : "R19,999"}
+                      </span>
+                    </div>
                   </div>
-                  <div className="text-right">
-                    <span className="text-xl font-display font-black text-emerald-400">
-                      {planModalService.id === "web-design" ? "R3,499" : "R8,999"}
-                    </span>
-                    <span className="block text-[10px] text-slate-400 font-mono line-through">
-                      {planModalService.id === "web-design" ? "R7,999" : "R19,999"}
-                    </span>
-                  </div>
+                  <h4 className="font-bold text-base text-white">Full Upfront Ownership Payment</h4>
                 </div>
 
-                <p className="text-[11px] text-slate-300">
+                <p className="text-xs text-slate-300 leading-relaxed">
                   Pay the reduced upfront price in full today. You lock in{" "}
-                  <strong>{planModalService.id === "web-design" ? "56% OFF" : "55% OFF"}</strong> full project ownership with zero long-term monthly balance and 3 months complimentary cloud hosting.
+                  <strong className="text-emerald-300">{planModalService.id === "web-design" ? "56% OFF" : "55% OFF"}</strong> full project ownership with zero long-term monthly balance and 3 months complimentary cloud hosting.
                 </p>
 
                 <button
@@ -373,7 +402,7 @@ export default function ServicesPage({ onTabChange }: ServicesPageProps) {
                       `Full upfront once-off payment for ${planModalService.title}`
                     )
                   }
-                  className="w-full flex items-center justify-center space-x-2 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold transition-all cursor-pointer shadow-md"
+                  className="w-full flex items-center justify-center space-x-2 py-3 bg-gradient-to-r from-emerald-600 to-emerald-500 hover:from-emerald-500 hover:to-emerald-400 text-white rounded-xl text-xs sm:text-sm font-bold transition-all shadow-lg hover:shadow-emerald-500/25 cursor-pointer"
                 >
                   <CreditCard className="w-4 h-4" />
                   <span>
@@ -383,15 +412,21 @@ export default function ServicesPage({ onTabChange }: ServicesPageProps) {
               </div>
             </div>
 
-            <div className="pt-2 text-center">
+            <div className="pt-2 flex items-center justify-between gap-3 text-xs">
               <button
                 onClick={() => {
                   setPlanModalService(null);
                   onTabChange("contact");
                 }}
-                className="text-xs text-slate-400 hover:text-white underline cursor-pointer"
+                className="text-slate-400 hover:text-white underline cursor-pointer text-left"
               >
-                Need a custom enterprise arrangement? Request a consult brief →
+                Need custom terms? Request a brief →
+              </button>
+              <button
+                onClick={() => setPlanModalService(null)}
+                className="px-3 py-1.5 rounded-lg bg-slate-800 text-slate-300 hover:text-white transition-colors cursor-pointer text-xs font-bold"
+              >
+                Close Window
               </button>
             </div>
           </div>
@@ -571,8 +606,8 @@ export default function ServicesPage({ onTabChange }: ServicesPageProps) {
         <div className="space-y-3">
           {[
             {
-              q: "How does the R400 setup + R150/month subscription plan work?",
-              a: "To make website design and AI app development accessible for township businesses, entrepreneurs, and local brands, we offer a low barrier-to-entry plan! Pay an easy R400 setup fee today to start your custom design build. After launch, you pay an affordable R150/month subscription covering enterprise cloud hosting, SSL security certificates, and active technical maintenance."
+              q: "How does the R399 setup + R150/month subscription plan work?",
+              a: "To make website design and AI app development accessible for township businesses, entrepreneurs, and local brands, we offer a low barrier-to-entry plan! Pay an easy R399 setup fee today to start your custom design build. After launch, you pay an affordable R150/month subscription covering enterprise cloud hosting, SSL security certificates, and active technical maintenance."
             },
             {
               q: "How do Payfast online payments work?",
@@ -592,7 +627,7 @@ export default function ServicesPage({ onTabChange }: ServicesPageProps) {
             },
             {
               q: "How do you handle hosting and platform maintenance after launch?",
-              a: "When you sign up under our R400 setup plan, your hosting and maintenance are included for just R150/month. For full once-off ownership builds, 3 months of complimentary cloud hosting is included, after which you can transition to your own cloud instance or keep running on our workspace."
+              a: "When you sign up under our R399 setup plan, your hosting and maintenance are included for just R150/month. For full once-off ownership builds, 3 months of complimentary cloud hosting is included, after which you can transition to your own cloud instance or keep running on our workspace."
             }
           ].map((faq, index) => (
             <FAQItem key={index} faq={faq} />
