@@ -5,6 +5,7 @@ export async function initiatePayfastPayment(params: {
   amountRands: number;
   itemName: string;
   itemDescription?: string;
+  paymentId?: string;
   returnPath?: string;
   cancelPath?: string;
   customStr1?: string;

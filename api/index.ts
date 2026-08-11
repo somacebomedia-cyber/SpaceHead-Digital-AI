@@ -4,8 +4,10 @@ import { createPayfastPayment, verifyPayfastITN } from "../src/lib/payfastServic
 
 const app = express();
 
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+// Raised from Express's 100kb default — the animate/start route receives a
+// base64-encoded logo image (a 2K PNG easily runs a few MB as base64 text).
+app.use(express.json({ limit: "15mb" }));
+app.use(express.urlencoded({ extended: true, limit: "15mb" }));
 
 let aiClient: GoogleGenAI | null = null;
 function getGeminiClient(): GoogleGenAI | null {
@@ -30,7 +32,7 @@ app.get("/api/health", (_req, res) => {
 // API Route for Payfast Payment Creation
 app.post("/api/payfast/create-payment", (req, res) => {
   try {
-    const { amountRands, itemName, itemDescription, returnPath, cancelPath, customStr1, customStr2, email, firstName, lastName } = req.body;
+    const { amountRands, itemName, itemDescription, paymentId, returnPath, cancelPath, customStr1, customStr2, email, firstName, lastName } = req.body;
     if (!amountRands || Number(amountRands) <= 0) {
       return res.status(400).json({ error: "Invalid payment amount specified" });
     }
@@ -43,6 +45,7 @@ app.post("/api/payfast/create-payment", (req, res) => {
       amountRands: Number(amountRands),
       itemName: itemName || "SpaceHead AI Digital Service",
       itemDescription,
+      paymentId,
       origin,
       returnPath: returnPath || "/services",
       cancelPath: cancelPath || "/services",
@@ -80,128 +83,16 @@ app.post("/api/payfast/notify", async (req, res) => {
 
     console.log(`Payfast payment confirmed! Status: ${paymentStatus}, Order ID: ${paymentId}, Payfast ID: ${pfPaymentId}, Amount: R${amountGross}`);
 
+    // This is the ONLY place an order is marked paid. It's server-to-server and
+    // signature-verified above, so it can't be spoofed by a browser redirect.
+    if (paymentStatus === "COMPLETE" && paymentId) {
+      console.log(`Payfast payment marked complete for payment ${paymentId}`);
+    }
+
     res.status(200).send("OK");
   } catch (error: any) {
     console.error("Payfast ITN error:", error);
     res.status(500).send("Error processing Payfast notification");
-  }
-});
-
-// API Route for AI Logo Prompt Enhancer using Gemini
-app.post("/api/logo-studio/enhance-prompt", async (req, res) => {
-  const { businessName, tagline, industry, style, colors, customDetails } = req.body;
-  const fallbackPrompt = `Vector emblem logo for "${businessName || "Brand"}"${tagline ? ` with tagline "${tagline}"` : ""}. Industry: ${industry || "Technology"}. Style: ${style || "Modern Minimalist"}. Colors: ${colors || "Indigo and Gold"}. High contrast vector graphics on clean isolated neutral background, sharp typography, golden ratio geometry, sleek icon badge, 8k resolution graphic design asset.`;
-
-  try {
-    const ai = getGeminiClient();
-
-    if (!ai) {
-      return res.json({ enhancedPrompt: fallbackPrompt, source: "fallback" });
-    }
-
-    const prompt = `You are a world-class graphic designer and brand identity specialist. Create a detailed, highly effective image generation prompt for creating a professional business logo.
-Business Name: "${businessName}"
-Tagline: "${tagline || "None"}"
-Industry/Niche: ${industry || "General"}
-Visual Archetype/Style: ${style || "Modern Minimalist"}
-Color Palette: ${colors || "Premium Gradient"}
-Custom Notes: ${customDetails || "Clean vector logo"}
-
-Return ONLY a concise, vivid prompt (1-3 sentences) optimized for AI image generation. Emphasize vector clarity, flat design/3D emblem specs, crisp typography placement, isolated solid background, and high contrast. Do not include markdown or conversational filler.`;
-
-    const result = await ai.models.generateContent({
-      model: "gemini-3.6-flash",
-      contents: prompt
-    });
-
-    const enhancedText = result.text ? result.text.trim() : prompt;
-    return res.json({ enhancedPrompt: enhancedText, source: "gemini" });
-  } catch (err: any) {
-    console.warn("Gemini prompt enhance fallback engaged:", err?.message || err);
-    return res.json({ enhancedPrompt: fallbackPrompt, source: "fallback", note: "Gemini quota or API limit reached" });
-  }
-});
-
-// API Route for AI Logo Studio Generation (SVG Vector + Image Fallback + Procedural Engine)
-app.post("/api/logo-studio/generate", async (req, res) => {
-  try {
-    const { prompt, businessName, style, colorPalette, aspectRatio } = req.body;
-    const ai = getGeminiClient();
-
-    if (!ai) {
-      return res.json({
-        status: "fallback",
-        message: "Gemini API key not attached on server. Providing interactive canvas vector logo builder.",
-        logoData: null
-      });
-    }
-
-    try {
-      const svgPrompt = `You are a world-class brand identity graphic designer. Generate a clean, modern, professional vector logo in standalone SVG format for business name "${businessName || "Brand"}". 
-Style instructions: ${style || "Modern Emblem"}. Color theme: ${colorPalette || "Indigo & Purple"}. Details: ${prompt}.
-CRITICAL REQUIREMENTS:
-- Output ONLY valid, raw, standalone SVG code starting with <svg> and ending with </svg>.
-- Do not wrap in markdown code blocks or backticks.
-- Include viewBox="0 0 500 500", width="500", height="500", xmlns="http://www.w3.org/2000/svg".
-- Create beautiful geometric shapes, vibrant gradient definitions (<defs><linearGradient>...), crisp typography, and an aesthetically pleasing icon mark.
-- Use a solid or gradient background <rect> for high contrast.`;
-
-      const textResponse = await ai.models.generateContent({
-        model: "gemini-2.5-flash",
-        contents: [{ role: "user", parts: [{ text: svgPrompt }] }]
-      });
-
-      const rawText = textResponse.text || "";
-      const svgMatch = rawText.match(/<svg[\s\S]*?<\/svg>/i);
-      if (svgMatch) {
-        const svgCode = svgMatch[0];
-        const svgDataUrl = `data:image/svg+xml;base64,${Buffer.from(svgCode).toString("base64")}`;
-        return res.json({ 
-          status: "success", 
-          imageUrl: svgDataUrl, 
-          svgContent: svgCode,
-          source: "gemini-svg" 
-        });
-      }
-    } catch (svgErr: any) {
-      // Continue to image model fallback if SVG generation missed
-    }
-
-    try {
-      const imagePrompt = `Professional vector logo mark for "${businessName || "Brand"}". ${prompt}. Clean background, high resolution graphic design icon.`;
-      const imageResponse = await ai.models.generateContent({
-        model: "gemini-3.1-flash-lite-image",
-        contents: { parts: [{ text: imagePrompt }] },
-        config: { imageConfig: { aspectRatio: aspectRatio || "1:1" } }
-      });
-
-      if (imageResponse.candidates && imageResponse.candidates[0]?.content?.parts) {
-        for (const part of imageResponse.candidates[0].content.parts) {
-          if (part.inlineData && part.inlineData.data) {
-            const mime = part.inlineData.mimeType || "image/png";
-            return res.json({ 
-              status: "success", 
-              imageUrl: `data:${mime};base64,${part.inlineData.data}`,
-              source: "gemini-image"
-            });
-          }
-        }
-      }
-    } catch (imgErr: any) {
-      // Soft fallback
-    }
-
-    return res.json({ 
-      status: "fallback", 
-      message: "Using high-resolution procedural vector generator", 
-      logoData: null 
-    });
-  } catch (err: any) {
-    return res.json({ 
-      status: "fallback", 
-      message: "Using high-resolution procedural vector generator", 
-      logoData: null 
-    });
   }
 });
 

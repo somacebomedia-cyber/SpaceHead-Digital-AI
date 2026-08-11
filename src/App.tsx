@@ -20,7 +20,6 @@ import Footer from "./components/Footer";
 import Home from "./components/Home";
 
 // Lazy-loaded Components for code-splitting
-const LogoStudio = lazy(() => import("./components/LogoStudio"));
 const ServicesPage = lazy(() => import("./components/ServicesPage"));
 const ProjectsPage = lazy(() => import("./components/ProjectsPage"));
 const BlogsPage = lazy(() => import("./components/BlogsPage"));
@@ -270,12 +269,6 @@ export default function App() {
                     onTabChange={handleTabChange}
                     onSelectProject={(p) => { setSelectedProject(p); handleTabChange("projects"); }}
                     onSelectBlog={(b) => { setSelectedBlog(b); handleTabChange("blogs"); }}
-                  />
-                )}
-
-                {currentTab === "logo-studio" && (
-                  <LogoStudio 
-                    onTabChange={handleTabChange}
                   />
                 )}
 

@@ -4,11 +4,11 @@ import SpaceHeadLogo from "./SpaceHeadLogo";
 import SEO from "./SEO";
 import { 
   ArrowRight, 
-  Sparkles,
-  Wand2,
+  Briefcase,
   Laptop,
   Video,
-  Code
+  Code,
+  Mail
 } from "lucide-react";
 import ServiceCard, { ServiceCardData } from "./ServiceCard";
 import DeviceShowcase from "./DeviceShowcase";
@@ -18,16 +18,16 @@ const HOME_SERVICE_CARDS: ServiceCardData[] = [
     id: "web-design",
     title: "Premium Website Design",
     category: "Web Development",
-    badge: "Flagship Core Build",
+    badge: "SAVE 56% UPFRONT • R400 SETUP PLAN",
     description:
-      "Bespoke high-performance digital presences designed natively with high compression and data-light optimization for fast loading.",
-    price: "R3,499",
+      "Bespoke high-performance digital presences. Pay R3,499 upfront (SAVE 56% / Save R4,500 off standard R7,999 value), or start for R400 setup + R150/mo subscription over 50 months.",
+    price: "R400",
     originalPrice: "R7,999",
-    period: "once-off",
+    period: "setup + R150/mo",
     features: [
-      "Data-light loading optimization",
-      "Core Web Vitals optimized",
-      "Local Google SEO & Maps",
+      "Save 56% (Save R4,500) on R3,499 upfront option",
+      "OR R400 setup + R150/mo over 50 months (R7,999 value)",
+      "Data-light mobile optimization & local SEO",
     ],
     image: "https://lh3.googleusercontent.com/d/1nLpdWKVSUSvAh2JrtsP7EfKGUIkH6ym6=w1000",
     accent: "indigo",
@@ -37,16 +37,16 @@ const HOME_SERVICE_CARDS: ServiceCardData[] = [
     id: "video-ads",
     title: "AI Video Adverts",
     category: "Animated Videos",
-    badge: "Local Business Booster",
+    badge: "SAVE 58% • LOCAL BOOSTER",
     description:
-      "High-converting promos compressed and tailored perfectly for WhatsApp Business, Facebook Lite, and local digital feeds.",
+      "High-converting promos compressed and tailored for WhatsApp Business, Facebook Lite, and local feeds. Save 58% off standard video creation (R399 vs R950).",
     price: "R399",
     originalPrice: "R950",
     period: "per video",
     features: [
+      "Save 58% off standard agency pricing",
       "Perfect for WhatsApp & FB Statuses",
       "30-second promo variants included",
-      "Fluid animations & copy included",
     ],
     image: "https://lh3.googleusercontent.com/d/1546AScUm3fseqml8dfgHEKo5t9TOfx7N=w1000",
     accent: "purple",
@@ -55,16 +55,16 @@ const HOME_SERVICE_CARDS: ServiceCardData[] = [
     id: "vibe-coding",
     title: "AI App Vibe Coding",
     category: "App Development",
-    badge: "SMME Prototype Build",
+    badge: "SAVE 55% UPFRONT • R400 SETUP PLAN",
     description:
-      "Affordable full-stack workflow and order tools built rapidly using AI code pipelines to optimize your local operations.",
-    price: "R8,999",
+      "Full-stack workflow and order tools built rapidly using AI. Pay R8,999 upfront (SAVE 55% / Save R11,000 off standard R19,999 value), or start for R400 setup + R150/mo over 130 months.",
+    price: "R400",
     originalPrice: "R19,999",
-    period: "per prototype",
+    period: "setup + R150/mo",
     features: [
-      "Live dashboards, DB-connected",
-      "Order & workflow management",
-      "Clean cloud dashboard states",
+      "Save 55% (Save R11,000) on R8,999 upfront option",
+      "OR R400 setup + R150/mo over 130 months (R19,999 value)",
+      "Live dashboards & DB-connected tools",
     ],
     image: "https://lh3.googleusercontent.com/d/17U_APICMOCc44uJCSl6PkHReYuijxThu=w1000",
     accent: "emerald",
@@ -127,16 +127,15 @@ export default function Home({ projects, blogs, onTabChange, onSelectProject, on
 
             <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-3 pt-2">
               <button
-                onClick={() => onTabChange("logo-studio")}
-                className="w-full sm:w-auto inline-flex items-center justify-center space-x-2 px-7 py-3.5 bg-gradient-to-r from-purple-600 via-indigo-600 to-indigo-700 hover:from-purple-500 hover:to-indigo-600 text-white rounded-xl font-bold text-sm shadow-xl shadow-purple-900/40 transition-all hover:-translate-y-0.5 cursor-pointer ring-2 ring-purple-400/30"
+                onClick={() => onTabChange("contact")}
+                className="btn-signature w-full sm:w-auto inline-flex items-center justify-center space-x-2 px-7 py-3.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl font-bold text-sm cursor-pointer"
               >
-                <Wand2 className="w-4 h-4 text-amber-300" />
-                <span>AI Logo & Animation Studio</span>
-                <Sparkles className="w-3.5 h-3.5 text-amber-300" />
+                <Mail className="w-4 h-4" />
+                <span>Request Custom Consult</span>
               </button>
               <button
                 onClick={() => onTabChange("services")}
-                className="w-full sm:w-auto inline-flex items-center justify-center space-x-2 px-6 py-3.5 bg-slate-900/90 hover:bg-slate-900 text-slate-200 rounded-xl font-bold text-sm border border-slate-700/80 transition-all hover:-translate-y-0.5 cursor-pointer"
+                className="w-full sm:w-auto inline-flex items-center justify-center space-x-2 px-6 py-3.5 bg-transparent hover:bg-slate-900 text-slate-200 rounded-xl font-bold text-sm border border-slate-700 cursor-pointer"
               >
                 <span>Explore Specializations</span>
                 <ArrowRight className="w-4 h-4" />

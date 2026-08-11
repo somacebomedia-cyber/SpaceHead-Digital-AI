@@ -2,6 +2,58 @@ import { Project, BlogPost } from "../types";
 
 export const INITIAL_PROJECTS: Project[] = [
   {
+    id: "proj-saas-stacfund",
+    title: "StacFund AI — SA SME Funding Discovery & Document Generation Platform",
+    description: "South African business funding discovery and document generation platform targeting entrepreneurs and SMEs seeking NYDA, SEFA, NEF, and IDC funding. Originally built as 'FundHub' in Google AI Studio, featuring a cosmic space purple brand identity, tiered multi-batch Gemini orchestrator (generating up to 95-page business plans), PWA mobile installability, and the 'SA Funding Pulse' intelligence layer.",
+    category: "SaaS & Web Apps",
+    tags: ["SaaS", "SME Funding", "NYDA / SEFA / NEF / IDC", "Cosmic Purple", "Multi-Batch Gemini", "SA Funding Pulse", "PWA Installable"],
+    demoUrl: "",
+    githubUrl: "https://github.com/spaceheadai/stacfund-ai",
+    imageUrl: "https://images.unsplash.com/photo-1551288049-bebda4e38f71?q=80&w=800&auto=format&fit=crop",
+    createdAt: 1773100000000,
+    userId: "system",
+    isPublic: true
+  },
+  {
+    id: "proj-saas-incutrack",
+    title: "IncuTrack AI — Business Incubation Tracking Platform",
+    description: "Built for Esayidi TVET College Incubator, IncuTrack AI manages incubated businesses across a 36-month programme. Features private incubant portals, locked monthly progress check-ins (revenue, expenses, customers, staff, achievements & challenges), incubator manager dashboards, and automated 36-month journey tracking. Roadmap includes automated bank statement analysis and an AI business coach.",
+    category: "SaaS & Web Apps",
+    tags: ["SaaS", "Incubation Platform", "Esayidi TVET", "36-Month Tracking"],
+    demoUrl: "",
+    githubUrl: "",
+    imageUrl: "https://images.unsplash.com/photo-1460925895917-afdab827c52f?q=80&w=800&auto=format&fit=crop",
+    createdAt: 1773099000000,
+    userId: "system",
+    isPublic: true
+  },
+  {
+    id: "proj-saas-nurserynet",
+    title: "NurseryNet — Preschool & ECD Portal",
+    description: "Dedicated cloud management portal for early childhood development centers and nursery owners, streamlining operational administration, curriculum tracking, and real-time parent communications.",
+    category: "SaaS & Web Apps",
+    tags: ["SaaS", "Preschool Management", "EdTech", "Cloud Portal"],
+    demoUrl: "",
+    githubUrl: "",
+    imageUrl: "https://images.unsplash.com/photo-1503676260728-1c00da094a0b?q=80&w=800&auto=format&fit=crop",
+    createdAt: 1773098000000,
+    userId: "system",
+    isPublic: true
+  },
+  {
+    id: "proj-saas-studioflow",
+    title: "StudioFlow — Creative Workflow Automation",
+    description: "Sleek creative pipeline and studio workflow management platform automating media production tracking, client revision loops, render asset management, and agency project delivery.",
+    category: "SaaS & Web Apps",
+    tags: ["SaaS", "Creative Workflow", "Media Asset Management", "Agency Automation"],
+    demoUrl: "",
+    githubUrl: "",
+    imageUrl: "https://images.unsplash.com/photo-1542744094-3a3172720177?q=80&w=800&auto=format&fit=crop",
+    createdAt: 1773097000000,
+    userId: "system",
+    isPublic: true
+  },
+  {
     id: "proj-web-nawilearn",
     title: "NawiLearn Preschool Website",
     description: "Custom digital web platform designed and built for a preschool owner in Umzimkhulu. Features intuitive parent navigation, early learning curriculum highlights, and ongoing active cloud management.",
@@ -278,6 +330,64 @@ At SpaceHead AI, we craft gorgeous custom video ads and sleek 3D video animation
     updatedAt: 1719100000000,
     userId: "system",
     authorName: "SpaceHead AI Team",
+    isPublished: true
+  },
+  {
+    id: "blog-3",
+    title: "StacFund AI Platform — Technical Overview, Security Hardening & Multi-Batch AI Document Engine",
+    slug: "stacfund-ai-technical-case-study",
+    summary: "A comprehensive technical breakdown of StacFund AI: South Africa's funding discovery and document generation platform for SMEs. Covers PWA installability, 16-file security audit, 12-variable HSL token design system, and tiered multi-batch Gemini generation producing up to 95-page business plans.",
+    content: `## Product Overview & Brand Identity
+
+**StacFund AI** (originally built in Google AI Studio under the name "FundHub" and later rebranded to StacFund) is a South African business funding discovery and document generation platform built specifically for entrepreneurs and SMEs seeking institutional funding from **NYDA**, **SEFA**, **NEF**, and **IDC**.
+
+### Core Platform Pillars
+*   **Targeted SA SME Funding**: Empowers township and local entrepreneurs to discover and apply for NYDA, SEFA, NEF, and IDC funding packages.
+*   **Cosmic Space Purple Aesthetic**: Built with a distinctive deep-space cosmic purple brand identity that conveys technical precision and ambition.
+*   **"SA Funding Pulse" Intelligence Layer**: Integrates a curated funding newsletter and intelligence system that alerts business owners to new grant cycles and institutional programs.
+*   **PWA Standalone Capabilities**: Engineered with Progressive Web App features for mobile home-screen installation and direct app store-like accessibility.
+
+---
+
+## Technical Audit & Security Hardening (Recent Work)
+
+### 1. 16-File Security Patch Delivery
+A comprehensive security audit resolved six critical production issues across the platform:
+1.  **API Key Isolation**: Eliminated client-side API key exposures by proxying all Gemini requests through secure server endpoints.
+2.  **Authenticated Proxy Authorization**: Protected proxy routes with strict user token verification.
+3.  **Firestore & Cloud Storage Security Rules**: Locked open write rules with granular tenant validation and schema checks.
+4.  **Container Port Alignment**: Cleared hardcoded PORT variables to ensure smooth Cloud Run ingress routing.
+5.  **Paystack Webhook Verification**: Enforced verified \`userId\` checking on payment confirmation webhooks.
+
+### 2. Code Quality & Multi-Phase Audits
+Replaced flawed code fragments left by external model iterations (GLM5.2):
+*   **Canvas Export Engine**: Fixed canvas footer clipping during video export sequences.
+*   **Express Rate Limiting**: Added strict route rate limiters on stock photo and asset discovery endpoints.
+*   **OutlineEditor State Preservation**: Resolved silent discarding of user edits during outline adjustments.
+
+### 3. Modern Design System & Component Redesign
+*   **12-Variable HSL Design Token System**: Integrated a clean 12-variable HSL token system in \`index.css\` paired with Tailwind CSS for themes.
+*   **Landing Page Restructure**: Rebuilt feature cards, improved accessibility (focus ring contrast, \`prefers-reduced-motion\` support), and replaced fabricated metrics with authentic copy.
+*   **Split Document Renderers**:
+    *   \`BusinessPlanDocument.tsx\`: Converted to a corporate Venturekit-style theme with dark cover support.
+    *   \`PitchDeckDocument.tsx\`: Enhanced with a custom \`DiamondPhoto\` component and a real 2x2 competitor quadrant map.
+
+---
+
+## Document Generation Engine & Long-Term Roadmap
+
+*   **Tiered Multi-Batch Gemini Orchestrator**: Upgraded the document generation pipeline from single-batch calls into a tiered multi-batch orchestrator capable of outputting up to **95-page comprehensive business plans** based on funding tiers.
+*   **Document Overflow & CSS Fixes**: Diagnosed and resolved page capping issues (~50 page overflow-hidden CSS clipping), added missing schema fields, and rebalanced batch token limits.
+*   **Backend & Security Protections**:
+    *   Fixed Firebase Admin SDK chained method syntax in \`advancedScraper.ts\`.
+    *   Upgraded SSRF protection in \`server.ts\` with DNS-level host validation.
+    *   Resolved file upload gaps in \`OnboardingWizard.tsx\` to persist actual binary uploads rather than metadata stubs.`,
+    category: "AI & Software Engineering",
+    tags: ["StacFund AI", "SME Funding", "Security Audit", "Gemini Multi-Batch", "PWA", "NYDA/SEFA"],
+    createdAt: 1723300000000,
+    updatedAt: 1723300000000,
+    userId: "system",
+    authorName: "SpaceHead AI Engineering Team",
     isPublished: true
   }
 ];

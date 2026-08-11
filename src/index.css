@@ -6,7 +6,7 @@
   --font-display: "Space Grotesk", sans-serif;
   --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
 
-  /* Custom 3D Pastel Animations */
+  /* Ambient background motion only — never applied to buttons or content */
   --animate-float-slow: float-slow 7s ease-in-out infinite;
   --animate-float-medium: float-medium 5s ease-in-out infinite;
   --animate-float-fast: float-fast 3.5s ease-in-out infinite;
@@ -52,155 +52,42 @@
 }
 
 /* ==========================================================================
-   LIQUID GLASS BUTTON SYSTEM (Preserving Colors)
+   BUTTONS — flat by default, restrained by design.
+   Colour, weight and hover states live on the element itself via Tailwind
+   classes in the component (bg-*, hover:bg-*, etc). This file only adds:
+   1) a consistent, quick transition so hover/press feel intentional
+   2) a visible keyboard focus ring (accessibility, not decoration)
+   3) one opt-in "signature" treatment for the single CTA per page that
+      earns extra attention — everything else stays quiet.
    ========================================================================== */
 
-/* Base liquid glass properties applied to content UI buttons (excluding top header & navbar elements) */
-button:not(.btn-plain):not(.text-link):not(.btn-flat):not(nav button):not(header button):not(#app-navbar button),
-.liquid-glass-btn {
-  position: relative !important;
-  isolation: isolate !important;
-  overflow: hidden !important;
-  backdrop-filter: blur(12px) saturate(180%) !important;
-  -webkit-backdrop-filter: blur(12px) saturate(180%) !important;
-
-  /* Specular top border light reflection & 3D translucent depth shadow */
-  border-top-color: rgba(255, 255, 255, 0.45) !important;
-  box-shadow: 
-    inset 0 1px 1.5px 0 rgba(255, 255, 255, 0.45),
-    inset 0 -1.5px 3px 0 rgba(0, 0, 0, 0.25),
-    0 4px 16px -2px rgba(15, 23, 42, 0.15) !important;
-
-  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1),
-              box-shadow 0.25s ease,
-              filter 0.25s ease,
-              background-color 0.25s ease,
-              border-color 0.25s ease !important;
+button {
+  transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease, opacity 0.15s ease;
 }
 
-/* Ensure all child elements (icons, text, badges, spinners) render sharp on top of gloss */
-button:not(.btn-plain):not(.text-link):not(.btn-flat):not(nav button):not(header button):not(#app-navbar button) > *,
-.liquid-glass-btn > * {
-  position: relative;
-  z-index: 10;
+button:active {
+  transform: translateY(1px);
 }
 
-/* Specular Upper Gloss Sheen Overlay */
-button:not(.btn-plain):not(.text-link):not(.btn-flat):not(nav button):not(header button):not(#app-navbar button)::before,
-.liquid-glass-btn::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 48%;
-  background: linear-gradient(
-    180deg,
-    rgba(255, 255, 255, 0.32) 0%,
-    rgba(255, 255, 255, 0.06) 75%,
-    rgba(255, 255, 255, 0) 100%
-  );
-  border-top-left-radius: inherit;
-  border-top-right-radius: inherit;
-  pointer-events: none;
-  transition: opacity 0.25s ease;
-  z-index: 1;
+button:focus-visible {
+  outline: 2px solid rgba(99, 102, 241, 0.6);
+  outline-offset: 2px;
 }
 
-/* Sweep Reflection Ray on Hover */
-button:not(.btn-plain):not(.text-link):not(.btn-flat):not(nav button):not(header button):not(#app-navbar button)::after,
-.liquid-glass-btn::after {
-  content: "";
-  position: absolute;
-  top: -60%;
-  left: -60%;
-  width: 220%;
-  height: 220%;
-  background: linear-gradient(
-    60deg,
-    transparent 35%,
-    rgba(255, 255, 255, 0.35) 50%,
-    transparent 65%
-  );
-  transform: translateX(-100%);
-  transition: transform 0.65s cubic-bezier(0.16, 1, 0.3, 1);
-  pointer-events: none;
-  z-index: 2;
+/* Reserve this for ONE primary call-to-action per page — not a global default.
+   A single subtle lift + shadow deepening on hover, nothing layered on top. */
+.btn-signature {
+  transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.15s ease;
+}
+.btn-signature:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 20px -6px rgba(15, 23, 42, 0.35);
+}
+.btn-signature:active {
+  transform: translateY(0);
 }
 
-button:not(.btn-plain):not(.text-link):not(.btn-flat):not(nav button):not(header button):not(#app-navbar button):hover::after,
-.liquid-glass-btn:hover::after {
-  transform: translateX(100%);
-}
-
-/* Hover Dynamics */
-button:not(.btn-plain):not(.text-link):not(.btn-flat):not(nav button):not(header button):not(#app-navbar button):hover,
-.liquid-glass-btn:hover {
-  filter: brightness(1.1) contrast(1.02) !important;
-  transform: translateY(-1.5px) scale(1.02) !important;
-  box-shadow: 
-    inset 0 1px 2.5px 0 rgba(255, 255, 255, 0.7),
-    inset 0 -1.5px 3px 0 rgba(0, 0, 0, 0.2),
-    0 10px 25px -3px rgba(15, 23, 42, 0.22) !important;
-}
-
-/* Active Press State */
-button:not(.btn-plain):not(.text-link):not(.btn-flat):not(nav button):not(header button):not(#app-navbar button):active,
-.liquid-glass-btn:active {
-  transform: translateY(1px) scale(0.975) !important;
-  filter: brightness(0.95) !important;
-  box-shadow: 
-    inset 0 1.5px 4px 0 rgba(0, 0, 0, 0.35),
-    inset 0 0 1px 0 rgba(255, 255, 255, 0.2),
-    0 2px 8px -1px rgba(15, 23, 42, 0.12) !important;
-}
-
-/* Refined reflection for light/white content buttons */
-button.bg-white:not(nav button):not(header button),
-button.bg-slate-50:not(nav button):not(header button),
-button.bg-slate-100:not(nav button):not(header button) {
-  box-shadow: 
-    inset 0 1px 1.5px 0 rgba(255, 255, 255, 0.9),
-    inset 0 -1px 2px 0 rgba(0, 0, 0, 0.08),
-    0 4px 14px -2px rgba(15, 23, 42, 0.08) !important;
-}
-
-/* Transparent / Subtle icon buttons get soft liquid glass container on hover */
-button.bg-transparent:not(:hover):not(nav button):not(header button),
-button.bg-none:not(:hover):not(nav button):not(header button) {
-  box-shadow: none !important;
-  border-top-color: transparent !important;
-}
-button.bg-transparent:not(:hover):not(nav button):not(header button)::before,
-button.bg-none:not(:hover):not(nav button):not(header button)::before {
-  opacity: 0;
-}
-button.bg-transparent:hover:not(nav button):not(header button)::before,
-button.bg-none:hover:not(nav button):not(header button)::before {
-  opacity: 1;
-}
-
-/* Explicit flat styling reset for nav and header buttons */
-nav button,
-header button,
-.btn-flat {
-  backdrop-filter: none !important;
-  -webkit-backdrop-filter: none !important;
-  filter: none !important;
-  transform: none !important;
-}
-
-nav button::before,
-nav button::after,
-header button::before,
-header button::after,
-.btn-flat::before,
-.btn-flat::after {
-  display: none !important;
-  content: none !important;
-}
-
-/* Scrollbar styling for a high-end feel */
+/* Scrollbar styling */
 ::-webkit-scrollbar {
   width: 6px;
 }
@@ -215,3 +102,12 @@ header button::after,
   background: rgba(148, 163, 184, 0.5);
 }
 
+/* Respect users who've asked for less motion */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

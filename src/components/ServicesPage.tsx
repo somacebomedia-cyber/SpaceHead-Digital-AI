@@ -38,29 +38,29 @@ const MAIN_SERVICES: ServiceCardData[] = [
     id: "web-design",
     title: "Premium Website Design",
     category: "Web Development",
-    badge: "Flagship Core Build",
-    description: "Bespoke high-performance desktop & mobile experiences built natively with modern frameworks. Engineered with high compression and low-data optimization so rural and township clients can browse your site quickly with zero lag.",
-    price: "R3,499",
+    badge: "SAVE 56% UPFRONT • R400 SETUP PLAN",
+    description: "Bespoke high-performance desktop & mobile experiences. Pay R3,499 upfront for full ownership (SAVE 56% / Save R4,500 off the standard R7,999 value), OR start with an easy R400 setup fee + R150/mo subscription paid over 50 months.",
+    price: "R400",
     originalPrice: "R7,999",
-    period: "once-off (or R299/mo)",
-    amountRands: 3499,
+    period: "setup + R150/mo (or R3,499 once-off)",
+    amountRands: 400,
     image: "https://lh3.googleusercontent.com/d/1nLpdWKVSUSvAh2JrtsP7EfKGUIkH6ym6=w1000",
     accent: "indigo",
     featured: true,
     features: [
-      "Complete custom bespoke architecture",
-      "Data-light responsive mobile mechanics",
-      "High-performance speed & Core Web Vitals optimization",
-      "Local Google SEO & Maps integration",
-      "Custom copywriting & conversion layout blocks"
+      "Save 56% (Save R4,500) when paying R3,499 upfront",
+      "OR R400 setup fee + R150/mo over 50 months (R7,999 value)",
+      "Complete custom bespoke responsive architecture",
+      "Data-light mobile mechanics for low data usage",
+      "Local Google SEO & 24/7 cloud server maintenance"
     ]
   },
   {
     id: "video-ads",
     title: "AI-Powered Video Adverts",
     category: "Animated Videos",
-    badge: "Local Business Booster",
-    description: "Sleek promotional cinematic video ads and social media loops designed to immediately capture attention. Specifically optimized for easy sharing on WhatsApp Business, Facebook Lite, and TikTok.",
+    badge: "SAVE 58% • LOCAL BOOSTER",
+    description: "Sleek promotional cinematic video ads and social media loops designed to immediately capture attention. Save 58% off standard agency rates (R399 vs R950). Optimized for WhatsApp Business, Facebook Lite, and TikTok.",
     price: "R399",
     originalPrice: "R950",
     period: "per video",
@@ -68,31 +68,31 @@ const MAIN_SERVICES: ServiceCardData[] = [
     image: "https://lh3.googleusercontent.com/d/1546AScUm3fseqml8dfgHEKo5t9TOfx7N=w1000",
     accent: "purple",
     features: [
+      "Save 58% off standard video creation (R399 vs R950)",
       "Cinematic pattern-interrupt visual hooks",
       "Engaging narrative pacing & custom voiceover style",
       "Highly compressed for WhatsApp Status & social feeds",
-      "30-second explainer & promo variants included",
-      "Fluid motion graphic transitions and branding integration"
+      "30-second explainer & promo variants included"
     ]
   },
   {
     id: "vibe-coding",
     title: "AI App Vibe Coding",
     category: "Web Development",
-    badge: "SMME Prototype Build",
-    description: "Turn your township business idea, community workflow tool, or order management system into a living, fully functional web or mobile application in record time. Tailored for affordable, rapid local deployment.",
-    price: "R8,999",
+    badge: "SAVE 55% UPFRONT • R400 SETUP PLAN",
+    description: "Turn your business idea or workflow into a living web/mobile app in record time. Pay R8,999 upfront for full ownership (SAVE 55% / Save R11,000 off standard R19,999 value), OR start with an easy R400 setup + R150/mo subscription paid over 130 months.",
+    price: "R400",
     originalPrice: "R19,999",
-    period: "per prototype",
-    amountRands: 8999,
+    period: "setup + R150/mo (or R8,999 once-off)",
+    amountRands: 400,
     image: "https://lh3.googleusercontent.com/d/17U_APICMOCc44uJCSl6PkHReYuijxThu=w1000",
     accent: "emerald",
     features: [
+      "Save 55% (Save R11,000) when paying R8,999 upfront",
+      "OR R400 setup fee + R150/mo over 130 months (R19,999 value)",
       "Rapid prototyping and custom application MVPs",
       "Clean structural full-stack code layout",
-      "Interactive dashboards & database-connected state",
-      "Frictionless UI/UX styling using Tailwind CSS",
-      "Automated custom workflow tools tailored to your business"
+      "Interactive dashboards & database-connected state"
     ]
   }
 ];
@@ -108,6 +108,9 @@ export default function ServicesPage({ onTabChange }: ServicesPageProps) {
   } | null>(null);
   const [payingItem, setPayingItem] = useState<string | null>(null);
   const [payError, setPayError] = useState<string | null>(null);
+
+  // State for Plan Chooser Modal (R400 setup vs full once-off)
+  const [planModalService, setPlanModalService] = useState<ServiceCardData | null>(null);
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -136,14 +139,15 @@ export default function ServicesPage({ onTabChange }: ServicesPageProps) {
     }
   }, []);
 
-  const handlePayfastCheckout = async (title: string, amountRands: number, id: string) => {
+  const handlePayfastCheckout = async (title: string, amountRands: number, id: string, desc?: string) => {
     setPayingItem(id);
     setPayError(null);
+    setPlanModalService(null);
     try {
       await initiatePayfastPayment({
         amountRands,
         itemName: `SpaceHead AI - ${title}`,
-        itemDescription: `SpaceHead AI creative & technical services: ${title}`,
+        itemDescription: desc || `SpaceHead AI creative & technical services: ${title}`,
         returnPath: "/services",
         cancelPath: "/services",
         customStr1: id,
@@ -152,6 +156,19 @@ export default function ServicesPage({ onTabChange }: ServicesPageProps) {
       console.error("Payfast payment trigger failed:", err);
       setPayError(err.message || "Could not launch Payfast portal.");
       setPayingItem(null);
+    }
+  };
+
+  const handleServiceCardAction = (service: ServiceCardData, mode: "cta" | "payfast") => {
+    if (service.id === "web-design" || service.id === "vibe-coding") {
+      // Open plan selection modal allowing client to pick R400 setup or full once-off!
+      setPlanModalService(service);
+    } else {
+      if (mode === "cta") {
+        onTabChange("contact");
+      } else {
+        handlePayfastCheckout(service.title, service.amountRands || 399, service.id);
+      }
     }
   };
 
@@ -241,11 +258,145 @@ export default function ServicesPage({ onTabChange }: ServicesPageProps) {
             key={service.id}
             data={service}
             ctaLabel={payingItem === service.id ? "Redirecting..." : "Configure Build"}
-            onCta={() => onTabChange("contact")}
-            onPayfastPay={() => handlePayfastCheckout(service.title, service.amountRands || 399, service.id)}
+            onCta={() => handleServiceCardAction(service, "cta")}
+            onPayfastPay={() => handleServiceCardAction(service, "payfast")}
           />
         ))}
       </div>
+
+      {/* Plan Selection Modal for R400 Setup vs Full Upfront */}
+      {planModalService && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md animate-fade-in">
+          <div className="bg-slate-900 border border-slate-800 rounded-3xl max-w-lg w-full p-6 sm:p-8 space-y-6 text-white shadow-2xl relative overflow-hidden">
+            <button
+              onClick={() => setPlanModalService(null)}
+              className="absolute top-4 right-4 text-slate-400 hover:text-white p-1 rounded-full bg-slate-800/60 transition-colors cursor-pointer"
+            >
+              <XCircle className="w-6 h-6" />
+            </button>
+
+            <div className="space-y-2">
+              <span className="text-[10px] font-mono font-bold uppercase tracking-widest text-indigo-400 bg-indigo-500/10 px-3 py-1 rounded-full border border-indigo-500/20 inline-block">
+                Choose Payment Option
+              </span>
+              <h3 className="text-xl sm:text-2xl font-display font-extrabold text-white">
+                {planModalService.title}
+              </h3>
+              <p className="text-xs text-slate-300">
+                Pick the payment schedule that fits your budget best. Both plans include full custom design & build quality.
+              </p>
+            </div>
+
+            <div className="space-y-3">
+              {/* Option 1: Starter Easy Access (R400 Setup + R150/mo Subscription Payoff) */}
+              <div className="bg-gradient-to-br from-indigo-950/80 to-slate-900 border-2 border-indigo-500/60 p-5 rounded-2xl space-y-3 relative overflow-hidden shadow-lg">
+                <div className="absolute -right-8 -top-8 w-24 h-24 bg-indigo-500/20 rounded-full blur-xl pointer-events-none" />
+                <div className="flex items-start justify-between">
+                  <div>
+                    <span className="bg-indigo-500 text-white text-[9px] font-mono font-extrabold uppercase px-2 py-0.5 rounded-full inline-block mb-1">
+                      ⭐ Most Popular / Easy Monthly Payoff
+                    </span>
+                    <h4 className="font-bold text-sm text-white">Starter Setup & Subscription Plan</h4>
+                  </div>
+                  <div className="text-right">
+                    <span className="text-xl font-display font-black text-indigo-300">R400</span>
+                    <span className="block text-[10px] text-slate-400 font-mono">+ R150/mo</span>
+                  </div>
+                </div>
+
+                <ul className="text-[11px] text-slate-300 space-y-1.5 font-sans">
+                  <li className="flex items-start space-x-1.5">
+                    <CheckCircle2 className="w-3.5 h-3.5 text-indigo-400 flex-shrink-0 mt-0.5" />
+                    <span><strong>R400 setup fee</strong> due today to launch your custom design build immediately.</span>
+                  </li>
+                  <li className="flex items-start space-x-1.5">
+                    <CheckCircle2 className="w-3.5 h-3.5 text-indigo-400 flex-shrink-0 mt-0.5" />
+                    <span>
+                      <strong>R150/month subscription</strong> pays off the full standard value of{" "}
+                      <strong className="text-indigo-200">
+                        {planModalService.id === "web-design" ? "R7,999 (over 50 months)" : "R19,999 (over 130 months)"}
+                      </strong>.
+                    </span>
+                  </li>
+                  <li className="flex items-start space-x-1.5">
+                    <CheckCircle2 className="w-3.5 h-3.5 text-indigo-400 flex-shrink-0 mt-0.5" />
+                    <span>Includes 24/7 active cloud hosting, SSL security & technical care for the duration.</span>
+                  </li>
+                </ul>
+
+                <button
+                  onClick={() =>
+                    handlePayfastCheckout(
+                      `${planModalService.title} (Starter Setup R400 + R150/mo)`,
+                      400,
+                      planModalService.id,
+                      `R400 setup fee + R150/mo maintenance subscription for ${planModalService.title}`
+                    )
+                  }
+                  className="w-full flex items-center justify-center space-x-2 py-3 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-bold transition-all shadow-md cursor-pointer"
+                >
+                  <CreditCard className="w-4 h-4" />
+                  <span>Pay R400 Setup Fee via Payfast</span>
+                </button>
+              </div>
+
+              {/* Option 2: Full Upfront Ownership with Percentage Savings */}
+              <div className="bg-slate-800/80 border border-emerald-500/50 p-5 rounded-2xl space-y-3 relative overflow-hidden">
+                <div className="flex items-start justify-between">
+                  <div>
+                    <span className="bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 text-[9px] font-mono font-extrabold uppercase px-2 py-0.5 rounded-full inline-block mb-1">
+                      {planModalService.id === "web-design" ? "🔥 SAVE 56% (SAVE R4,500)" : "🔥 SAVE 55% (SAVE R11,000)"}
+                    </span>
+                    <h4 className="font-bold text-sm text-white">Full Upfront Ownership Payment</h4>
+                  </div>
+                  <div className="text-right">
+                    <span className="text-xl font-display font-black text-emerald-400">
+                      {planModalService.id === "web-design" ? "R3,499" : "R8,999"}
+                    </span>
+                    <span className="block text-[10px] text-slate-400 font-mono line-through">
+                      {planModalService.id === "web-design" ? "R7,999" : "R19,999"}
+                    </span>
+                  </div>
+                </div>
+
+                <p className="text-[11px] text-slate-300">
+                  Pay the reduced upfront price in full today. You lock in{" "}
+                  <strong>{planModalService.id === "web-design" ? "56% OFF" : "55% OFF"}</strong> full project ownership with zero long-term monthly balance and 3 months complimentary cloud hosting.
+                </p>
+
+                <button
+                  onClick={() =>
+                    handlePayfastCheckout(
+                      `${planModalService.title} (Full Upfront)`,
+                      planModalService.id === "web-design" ? 3499 : 8999,
+                      planModalService.id,
+                      `Full upfront once-off payment for ${planModalService.title}`
+                    )
+                  }
+                  className="w-full flex items-center justify-center space-x-2 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold transition-all cursor-pointer shadow-md"
+                >
+                  <CreditCard className="w-4 h-4" />
+                  <span>
+                    Pay {planModalService.id === "web-design" ? "R3,499" : "R8,999"} Upfront (Save {planModalService.id === "web-design" ? "R4,500" : "R11,000"})
+                  </span>
+                </button>
+              </div>
+            </div>
+
+            <div className="pt-2 text-center">
+              <button
+                onClick={() => {
+                  setPlanModalService(null);
+                  onTabChange("contact");
+                }}
+                className="text-xs text-slate-400 hover:text-white underline cursor-pointer"
+              >
+                Need a custom enterprise arrangement? Request a consult brief →
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Obscure Section for Miscellaneous Creative Assets & Capability Finder */}
       <div className="border border-slate-200/60 rounded-[24px] bg-slate-50/50 overflow-hidden transition-all max-w-4xl mx-auto">
@@ -420,6 +571,10 @@ export default function ServicesPage({ onTabChange }: ServicesPageProps) {
         <div className="space-y-3">
           {[
             {
+              q: "How does the R400 setup + R150/month subscription plan work?",
+              a: "To make website design and AI app development accessible for township businesses, entrepreneurs, and local brands, we offer a low barrier-to-entry plan! Pay an easy R400 setup fee today to start your custom design build. After launch, you pay an affordable R150/month subscription covering enterprise cloud hosting, SSL security certificates, and active technical maintenance."
+            },
+            {
               q: "How do Payfast online payments work?",
               a: "We integrate with Payfast, South Africa's premier payment gateway. You can securely pay via Credit/Debit Cards (Visa/Mastercard), Instant EFT, Masterpass, or Zapper in ZAR. Your order is verified instantly via secure ITN notifications."
             },
@@ -437,7 +592,7 @@ export default function ServicesPage({ onTabChange }: ServicesPageProps) {
             },
             {
               q: "How do you handle hosting and platform maintenance after launch?",
-              a: "Every custom website we design comes with 3 months of complimentary enterprise cloud hosting and performance tuning. Afterward, you can choose to transition to your own cloud instance or keep running on our optimized workspace setup with absolute SLA maintenance support."
+              a: "When you sign up under our R400 setup plan, your hosting and maintenance are included for just R150/month. For full once-off ownership builds, 3 months of complimentary cloud hosting is included, after which you can transition to your own cloud instance or keep running on our workspace."
             }
           ].map((faq, index) => (
             <FAQItem key={index} faq={faq} />

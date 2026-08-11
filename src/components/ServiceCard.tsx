@@ -57,11 +57,11 @@ export default function ServiceCard({ data, ctaLabel, onCta, onPayfastPay }: Ser
 
   return (
     <div
-      className={`relative overflow-hidden rounded-[32px] aspect-[3/4] flex flex-col justify-between shadow-[0_4px_20px_rgba(15,23,42,0.15)] hover:shadow-[0_36px_64px_-20px_rgba(15,23,42,0.5)] transition-all duration-500 hover:-translate-y-1.5 group ${
+      className={`relative overflow-hidden rounded-[28px] sm:rounded-[32px] min-h-[500px] sm:min-h-[540px] h-full flex flex-col justify-between shadow-[0_4px_20px_rgba(15,23,42,0.15)] hover:shadow-[0_36px_64px_-20px_rgba(15,23,42,0.5)] transition-all duration-500 hover:-translate-y-1.5 group ${
         data.featured ? `ring-2 ${a.ring} ring-offset-2 ring-offset-slate-50` : ""
       }`}
     >
-      {/* Cinematic background — swap in the real image once generated; graceful starfield fallback until then */}
+      {/* Cinematic background */}
       {data.image ? (
         <img
           src={data.image}
@@ -80,11 +80,11 @@ export default function ServiceCard({ data, ctaLabel, onCta, onPayfastPay }: Ser
         </div>
       )}
 
-      {/* Legibility scrim — dark at the base so text stays readable, clear toward the top so the art breathes */}
-      <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/50 to-transparent" />
+      {/* Legibility scrim — dark at the base so text stays readable, clear toward the top */}
+      <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/70 to-slate-950/20" />
 
       {/* Top: eyebrow badge, frosted glass on the image */}
-      <div className="relative z-10 p-6 sm:p-7 flex items-center justify-between">
+      <div className="relative z-10 p-5 sm:p-6 flex items-center justify-between gap-2">
         <span
           className={`inline-flex items-center text-[10px] font-mono font-bold uppercase tracking-wider px-2.5 py-1 rounded-full backdrop-blur-md border ${a.badge}`}
         >
@@ -103,8 +103,8 @@ export default function ServiceCard({ data, ctaLabel, onCta, onPayfastPay }: Ser
       </div>
 
       {/* Bottom: title, price, CTA — sits inside the scrim zone so it's legible over any image */}
-      <div className="relative z-10 p-6 sm:p-7 space-y-3">
-        <h3 className="font-display font-extrabold text-white text-xl sm:text-2xl leading-tight tracking-tight [text-shadow:0_2px_12px_rgba(0,0,0,0.4)]">
+      <div className="relative z-10 p-5 sm:p-6 pt-8 space-y-3 mt-auto">
+        <h3 className="font-display font-extrabold text-white text-lg sm:text-xl leading-tight tracking-tight [text-shadow:0_2px_12px_rgba(0,0,0,0.4)]">
           {data.title}
         </h3>
         <p className="text-xs text-white/85 leading-relaxed [text-shadow:0_1px_6px_rgba(0,0,0,0.4)]">
@@ -115,7 +115,7 @@ export default function ServiceCard({ data, ctaLabel, onCta, onPayfastPay }: Ser
         </p>
 
         <div className="flex items-baseline gap-2 pt-1">
-          <span className="text-2xl font-display font-black text-white">{data.price}</span>
+          <span className="text-xl sm:text-2xl font-display font-black text-white">{data.price}</span>
           {data.originalPrice && (
             <span className="text-[11px] line-through text-white/50 font-mono tracking-wide">
               {data.originalPrice}
@@ -124,20 +124,20 @@ export default function ServiceCard({ data, ctaLabel, onCta, onPayfastPay }: Ser
           <span className="text-[10px] text-white/70 font-mono">/ {data.period}</span>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1">
+        <div className={`grid ${onPayfastPay ? "grid-cols-2" : "grid-cols-1"} gap-2 pt-2`}>
           <button
             onClick={onCta}
-            className={`w-full flex items-center justify-center space-x-1 px-4 py-2.5 ${a.button} rounded-xl text-xs font-bold transition-all duration-300 hover:shadow-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-white cursor-pointer`}
+            className={`w-full flex items-center justify-center space-x-1 px-3 sm:px-4 py-2.5 ${a.button} rounded-xl text-[11px] sm:text-xs font-bold transition-all duration-300 hover:shadow-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-white cursor-pointer`}
           >
-            <span>{ctaLabel}</span>
-            <ArrowRight className="w-3.5 h-3.5" />
+            <span className="truncate">{ctaLabel}</span>
+            <ArrowRight className="w-3.5 h-3.5 flex-shrink-0" />
           </button>
           {onPayfastPay && (
             <button
               onClick={onPayfastPay}
-              className="w-full flex items-center justify-center space-x-1 px-4 py-2.5 bg-rose-600 hover:bg-rose-500 text-white rounded-xl text-xs font-bold transition-all duration-300 hover:shadow-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-white cursor-pointer"
+              className="w-full flex items-center justify-center space-x-1.5 px-3 sm:px-4 py-2.5 bg-rose-600 hover:bg-rose-500 text-white rounded-xl text-[11px] sm:text-xs font-bold transition-all duration-300 hover:shadow-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-white cursor-pointer"
             >
-              <CreditCard className="w-3.5 h-3.5" />
+              <CreditCard className="w-3.5 h-3.5 flex-shrink-0" />
               <span>Payfast</span>
             </button>
           )}

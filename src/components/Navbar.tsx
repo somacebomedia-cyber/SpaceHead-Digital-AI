@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Code, BookOpen, User, LayoutDashboard, LogOut, Menu, X, Layers, Briefcase, Mail, Wand2 } from "lucide-react";
+import { Code, BookOpen, User, LayoutDashboard, LogOut, Menu, X, Layers, Briefcase, Mail } from "lucide-react";
 import SpaceHeadLogo from "./SpaceHeadLogo";
 
 interface NavbarProps {
@@ -14,7 +14,6 @@ export default function Navbar({ currentTab, onTabChange, user, onLogout }: Navb
 
   const navItems = [
     { id: "home", label: "Home", icon: Layers },
-    { id: "logo-studio", label: "AI Logo Studio", icon: Wand2 },
     { id: "services", label: "Services", icon: Briefcase },
     { id: "projects", label: "Portfolio", icon: Code },
     { id: "blogs", label: "Blog", icon: BookOpen },
