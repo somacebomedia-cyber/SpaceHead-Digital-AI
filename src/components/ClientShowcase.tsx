@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { ArrowUpRight, ShieldCheck, CheckCircle2, Sparkles, ExternalLink } from "lucide-react";
+import React, { useState, useRef } from "react";
+import { ArrowUpRight, ShieldCheck, CheckCircle2, Sparkles, ExternalLink, ChevronLeft, ChevronRight } from "lucide-react";
 import { Project } from "../types";
 
 interface ClientShowcaseProps {
@@ -28,6 +28,34 @@ export default function ClientShowcase({
   projects = [],
 }: ClientShowcaseProps) {
   const [hoveredId, setHoveredId] = useState<string | null>(null);
+  const [activeIndex, setActiveIndex] = useState(0);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+
+  const handleScroll = () => {
+    if (!scrollContainerRef.current) return;
+    const { scrollLeft, clientWidth } = scrollContainerRef.current;
+    if (clientWidth > 0) {
+      const idx = Math.round(scrollLeft / (clientWidth * 0.85));
+      setActiveIndex(Math.max(0, Math.min(partners.length - 1, idx)));
+    }
+  };
+
+  const scrollToCard = (index: number) => {
+    if (!scrollContainerRef.current) return;
+    const cardEl = scrollContainerRef.current.children[index] as HTMLElement;
+    if (cardEl) {
+      cardEl.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "center" });
+    }
+    setActiveIndex(index);
+  };
+
+  const scrollPrev = () => {
+    scrollToCard(Math.max(0, activeIndex - 1));
+  };
+
+  const scrollNext = () => {
+    scrollToCard(Math.min(partners.length - 1, activeIndex + 1));
+  };
 
   const partners: PartnerClient[] = [
     {
@@ -617,8 +645,41 @@ export default function ClientShowcase({
         )}
       </div>
 
-      {/* 8-Logo Partner Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 pt-8">
+      {/* Mobile Swipe Bar & Navigation Controls */}
+      <div className="flex sm:hidden items-center justify-between pt-6 pb-2 text-xs text-slate-500 font-sans">
+        <div className="flex items-center gap-2 font-medium text-slate-700">
+          <span className="inline-block w-2 h-2 rounded-full bg-indigo-600 animate-pulse" />
+          <span>Swipe to explore showcases</span>
+          <span className="font-mono text-[11px] text-slate-400">({activeIndex + 1}/{partners.length})</span>
+        </div>
+        <div className="flex items-center gap-1.5">
+          <button
+            type="button"
+            onClick={scrollPrev}
+            disabled={activeIndex === 0}
+            aria-label="Previous client showcase"
+            className="p-1.5 rounded-lg border border-slate-200 bg-white text-slate-600 hover:text-indigo-600 disabled:opacity-35 disabled:cursor-not-allowed shadow-2xs transition-colors cursor-pointer"
+          >
+            <ChevronLeft className="w-4 h-4" />
+          </button>
+          <button
+            type="button"
+            onClick={scrollNext}
+            disabled={activeIndex === partners.length - 1}
+            aria-label="Next client showcase"
+            className="p-1.5 rounded-lg border border-slate-200 bg-white text-slate-600 hover:text-indigo-600 disabled:opacity-35 disabled:cursor-not-allowed shadow-2xs transition-colors cursor-pointer"
+          >
+            <ChevronRight className="w-4 h-4" />
+          </button>
+        </div>
+      </div>
+
+      {/* 8-Logo Partner Showcase: Scrollable Horizontal Carousel on Mobile (< sm), Responsive 4-Col Grid on Desktop (sm+) */}
+      <div
+        ref={scrollContainerRef}
+        onScroll={handleScroll}
+        className="flex sm:grid sm:grid-cols-2 lg:grid-cols-4 gap-3.5 sm:gap-4 overflow-x-auto sm:overflow-visible snap-x snap-mandatory scroll-smooth pb-3 sm:pb-0 pt-2 sm:pt-8 -mx-6 sm:mx-0 px-6 sm:px-0 [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
+      >
         {partners.map((partner) => {
           const isHovered = hoveredId === partner.id;
 
@@ -636,7 +697,7 @@ export default function ClientShowcase({
                   handleCardClick(partner);
                 }
               }}
-              className="group relative flex flex-col justify-between bg-white hover:bg-white border border-slate-200/90 hover:border-indigo-300 rounded-2xl p-5 transition-all duration-200 shadow-2xs hover:shadow-md cursor-pointer text-left focus-visible:outline-2 focus-visible:outline-indigo-600"
+              className="flex-shrink-0 w-[84vw] max-w-[320px] sm:w-auto sm:max-w-none snap-center sm:snap-align-none group relative flex flex-col justify-between bg-white hover:bg-white border border-slate-200/90 hover:border-indigo-300 rounded-2xl p-5 transition-all duration-200 shadow-2xs hover:shadow-md cursor-pointer text-left focus-visible:outline-2 focus-visible:outline-indigo-600"
             >
               {/* Top row: Brand Logo + External Indicator */}
               <div className="flex items-center justify-between gap-2 mb-4">
@@ -681,6 +742,23 @@ export default function ClientShowcase({
             </div>
           );
         })}
+      </div>
+
+      {/* Mobile Pagination Indicator Dots */}
+      <div className="flex sm:hidden items-center justify-center gap-1.5 pt-3 pb-1" aria-hidden="true">
+        {partners.map((_, idx) => (
+          <button
+            key={idx}
+            type="button"
+            onClick={() => scrollToCard(idx)}
+            className={`transition-all duration-300 rounded-full cursor-pointer ${
+              idx === activeIndex
+                ? "w-6 h-1.5 bg-indigo-600"
+                : "w-1.5 h-1.5 bg-slate-300 hover:bg-slate-400"
+            }`}
+            aria-label={`Jump to client showcase ${idx + 1}`}
+          />
+        ))}
       </div>
 
       {/* Bottom Proof Strip */}
