@@ -1,7 +1,10 @@
 import { useState, useMemo } from "react";
 import { Project } from "../types";
-import SEO from "./SEO";
-import { Code, Search, ExternalLink, Github, Globe, X, PlusCircle, Play, Maximize2 } from "lucide-react";
+import SEO, { DEFAULT_SOUTH_AFRICA_BUSINESS_SCHEMA } from "./SEO";
+import { Code, Search, ExternalLink, Github, Globe, X, PlusCircle, Play, Maximize2, Film } from "lucide-react";
+import VideoLightboxModal from "./VideoLightboxModal";
+import VideoEmbedPlayer from "./VideoEmbedPlayer";
+import { ProjectCardSkeleton } from "./ShimmerSkeletons";
 
 interface ProjectsPageProps {
   projects: Project[];
@@ -71,11 +74,20 @@ export default function ProjectsPage({
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [lightboxVideoProject, setLightboxVideoProject] = useState<Project | null>(null);
+  const [isHydrating, setIsHydrating] = useState(false);
 
   const categories = useMemo(() => {
     const cats = new Set(projects.map((p) => p.category));
     return ["All", ...Array.from(cats)];
   }, [projects]);
+
+  const handleCategoryChange = (cat: string) => {
+    if (cat === selectedCategory) return;
+    setIsHydrating(true);
+    setSelectedCategory(cat);
+    setTimeout(() => setIsHydrating(false), 120);
+  };
 
   const filteredProjects = useMemo(() => {
     return projects.filter((p) => {
@@ -90,9 +102,34 @@ export default function ProjectsPage({
   return (
     <div id="projects-view" className="space-y-10 pb-16">
       <SEO 
-        title="Bespoke Creative Showcase | Premium Project Portfolio"
-        description="Browse our portfolio of bespoke creative digital assets, high-converting brand identity concepts, and premium responsive business websites designed for absolute luxury and impact."
+        title="Web Design & Video Ads Portfolio for SA Businesses"
+        description="Explore custom websites, animated promotional video ads, and digital branding projects built for South African businesses, medical practices, and emerging startups."
         canonicalUrl="https://spaceheadai.co.za/projects"
+        keywords={[
+          "web design portfolio south africa",
+          "south african business website examples",
+          "animated video ads showcase",
+          "promotional video portfolio south africa",
+          "medical practice website portfolio za",
+          "graphic design portfolio johannesburg",
+          "responsive web agency cape town durban"
+        ]}
+        geoRegion="ZA"
+        geoPlacename="South Africa"
+        breadcrumbs={[
+          { name: "Home", item: "https://spaceheadai.co.za" },
+          { name: "Portfolio", item: "https://spaceheadai.co.za/projects" }
+        ]}
+        jsonLd={[
+          DEFAULT_SOUTH_AFRICA_BUSINESS_SCHEMA,
+          {
+            "@context": "https://schema.org",
+            "@type": "CollectionPage",
+            "name": "SpaceHead AI Creative Portfolio & Case Studies",
+            "url": "https://spaceheadai.co.za/projects",
+            "description": "Showcase of responsive web design, animated promotional video ads, and digital brand identities delivered for South African businesses."
+          }
+        ]}
       />
       
       {/* Page Header */}
@@ -122,8 +159,8 @@ export default function ProjectsPage({
           {categories.map((cat) => (
             <button
               key={cat}
-              onClick={() => setSelectedCategory(cat)}
-              className={`text-xs font-semibold px-3.5 py-1.5 rounded-lg transition-colors ${
+              onClick={() => handleCategoryChange(cat)}
+              className={`text-xs font-semibold px-3.5 py-1.5 rounded-lg transition-colors cursor-pointer ${
                 selectedCategory === cat
                   ? "bg-slate-900 text-white"
                   : "bg-white text-slate-600 border border-slate-200 hover:bg-slate-50"
@@ -135,8 +172,14 @@ export default function ProjectsPage({
         </div>
       </div>
 
-      {/* Grid List */}
-      {filteredProjects.length > 0 ? (
+      {/* Grid List or Shimmer Hydration Skeletons */}
+      {isHydrating ? (
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <ProjectCardSkeleton />
+          <ProjectCardSkeleton />
+          <ProjectCardSkeleton />
+        </div>
+      ) : filteredProjects.length > 0 ? (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {filteredProjects.map((project) => {
             const hasVideo = project.category === "Animated Videos" && getEmbedUrl(project.demoUrl, project.category).isVideo;
@@ -146,21 +189,35 @@ export default function ProjectsPage({
                 onClick={() => onSelectProject(project)}
                 className="group bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 cursor-pointer flex flex-col h-full"
               >
-                <div className="aspect-video w-full overflow-hidden relative bg-slate-100">
+                <div className={`aspect-video w-full overflow-hidden relative flex items-center justify-center ${
+                  hasVideo ? "bg-slate-900" : "bg-slate-950 p-6 border-b border-slate-800/80"
+                }`}>
                   {project.imageUrl ? (
                     <img
                       src={project.imageUrl}
                       alt={project.title}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                      loading="lazy"
+                      decoding="async"
+                      className={`transition-all duration-300 group-hover:scale-105 ${
+                        hasVideo
+                          ? "w-full h-full object-cover"
+                          : "max-h-[85%] max-w-[85%] object-contain drop-shadow-md"
+                      }`}
                       referrerPolicy="no-referrer"
                     />
                   ) : (
-                    <div className="w-full h-full flex items-center justify-center text-slate-300 bg-slate-50">
+                    <div className="w-full h-full flex items-center justify-center text-slate-300 bg-slate-900">
                       <Code className="w-12 h-12" />
                     </div>
                   )}
                   {hasVideo && (
-                    <div className="absolute inset-0 bg-slate-950/25 group-hover:bg-slate-950/40 flex items-center justify-center transition-colors">
+                    <div 
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setLightboxVideoProject(project);
+                      }}
+                      className="absolute inset-0 bg-slate-950/25 group-hover:bg-slate-950/40 flex items-center justify-center transition-colors cursor-pointer"
+                    >
                       <div className="w-12 h-12 rounded-full bg-white/90 group-hover:bg-orange-500 text-slate-900 group-hover:text-white flex items-center justify-center shadow-lg transform group-hover:scale-110 transition-all duration-300">
                         <Play className="w-5 h-5 fill-current ml-0.5" />
                       </div>
@@ -169,6 +226,12 @@ export default function ProjectsPage({
                   <span className="absolute top-3 left-3 bg-white/90 backdrop-blur-md text-slate-800 text-xs font-semibold px-2.5 py-1 rounded-full shadow-sm">
                     {project.category}
                   </span>
+                  {project.status && (
+                    <span className="absolute top-3 right-3 bg-amber-500 text-white text-[10px] font-bold tracking-wider uppercase px-2.5 py-1 rounded-full shadow-md backdrop-blur-md flex items-center gap-1.5 border border-amber-400/50">
+                      <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
+                      {project.status}
+                    </span>
+                  )}
                 </div>
                 <div className="p-6 flex-1 flex flex-col justify-between">
                   <div className="space-y-2">
@@ -179,15 +242,46 @@ export default function ProjectsPage({
                       {project.description}
                     </p>
                   </div>
-                  <div className="flex flex-wrap gap-1.5 pt-4">
-                    {project.tags.map((tag) => (
-                      <span
-                        key={tag}
-                        className="bg-slate-50 text-slate-600 text-[10px] font-mono px-2 py-0.5 rounded-md border border-slate-100"
+                  <div className="pt-4 space-y-3">
+                    <div className="flex flex-wrap gap-1.5">
+                      {project.tags.map((tag) => (
+                        <span
+                          key={tag}
+                          className={`text-[10px] font-mono px-2 py-0.5 rounded-md border ${
+                            tag === "In Active Development"
+                              ? "bg-amber-50 text-amber-800 border-amber-200 font-semibold"
+                              : "bg-slate-50 text-slate-600 border-slate-100"
+                          }`}
+                        >
+                          {tag}
+                        </span>
+                      ))}
+                    </div>
+
+                    {hasVideo ? (
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setLightboxVideoProject(project);
+                        }}
+                        className="w-full flex items-center justify-center space-x-2 py-2 px-3 bg-orange-50 hover:bg-orange-100 text-orange-700 border border-orange-200/80 rounded-xl text-xs font-bold transition-colors cursor-pointer"
                       >
-                        {tag}
-                      </span>
-                    ))}
+                        <Play className="w-3.5 h-3.5 fill-current" />
+                        <span>Watch in Cinema Player</span>
+                      </button>
+                    ) : project.demoUrl ? (
+                      <a
+                        href={project.demoUrl}
+                        target="_blank"
+                        rel="noreferrer noopener"
+                        onClick={(e) => e.stopPropagation()}
+                        className="w-full flex items-center justify-center space-x-1.5 py-2 px-3 bg-slate-900 hover:bg-purple-600 text-white rounded-xl text-xs font-semibold transition-colors cursor-pointer"
+                      >
+                        <ExternalLink className="w-3.5 h-3.5" />
+                        <span>{project.demoUrl.includes("vercel.app") ? "Open Vercel App Preview" : "Visit Live Site"}</span>
+                      </a>
+                    ) : null}
                   </div>
                 </div>
               </div>
@@ -216,27 +310,18 @@ export default function ProjectsPage({
             aria-modal="true"
             aria-labelledby="modal-title"
           >
-            <div className="relative aspect-video w-full bg-slate-950">
+            <div className="relative aspect-video w-full bg-slate-950 flex items-center justify-center">
               {(() => {
                 const video = getEmbedUrl(selectedProject.demoUrl, selectedProject.category);
-                if (video.isVideo) {
-                  if (video.isDirectVideo) {
-                    return (
-                      <video 
-                        src={video.embedUrl} 
-                        controls 
-                        autoPlay
-                        className="w-full h-full object-contain bg-black"
-                      />
-                    );
-                  }
+                if (video.isVideo && video.embedUrl) {
                   return (
-                    <iframe
-                      src={video.embedUrl}
-                      className="w-full h-full border-none"
-                      allow="autoplay; fullscreen; encrypted-media"
-                      allowFullScreen
+                    <VideoEmbedPlayer
+                      embedUrl={video.embedUrl}
+                      isDirectVideo={video.isDirectVideo}
                       title={selectedProject.title}
+                      category={selectedProject.category}
+                      demoUrl={selectedProject.demoUrl}
+                      className="w-full h-full"
                     />
                   );
                 }
@@ -246,7 +331,9 @@ export default function ProjectsPage({
                     <img
                       src={selectedProject.imageUrl}
                       alt={selectedProject.title}
-                      className="w-full h-full object-contain bg-slate-900 cursor-pointer"
+                      loading="lazy"
+                      decoding="async"
+                      className="max-h-[85%] max-w-[85%] object-contain cursor-pointer transition-transform hover:scale-105"
                       onClick={() => setIsFullscreen(true)}
                       referrerPolicy="no-referrer"
                     />
@@ -281,10 +368,16 @@ export default function ProjectsPage({
 
             <div className="p-5 sm:p-8 space-y-6">
               <div className="space-y-2">
-                <div className="flex items-center space-x-2">
+                <div className="flex items-center space-x-2 flex-wrap gap-y-1">
                   <span className="bg-purple-50 text-purple-700 text-xs font-semibold px-2.5 py-1 rounded-full border border-purple-100">
                     {selectedProject.category}
                   </span>
+                  {selectedProject.status && (
+                    <span className="bg-amber-50 text-amber-800 text-xs font-semibold px-2.5 py-1 rounded-full border border-amber-200 flex items-center gap-1.5">
+                      <span className="w-1.5 h-1.5 rounded-full bg-amber-500 animate-pulse" />
+                      {selectedProject.status}
+                    </span>
+                  )}
                   <span className="text-xs text-slate-400 font-mono">
                     {new Date(selectedProject.createdAt).toLocaleDateString()}
                   </span>
@@ -310,6 +403,20 @@ export default function ProjectsPage({
               </div>
 
               <div className="flex flex-col sm:flex-row gap-3 pt-4 border-t border-slate-100">
+                {getEmbedUrl(selectedProject.demoUrl, selectedProject.category).isVideo && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      onCloseModal();
+                      setLightboxVideoProject(selectedProject);
+                    }}
+                    className="flex-1 flex items-center justify-center space-x-2 px-5 py-3 bg-orange-500 hover:bg-orange-600 text-white rounded-xl text-xs sm:text-sm font-bold transition-colors shadow-sm cursor-pointer"
+                  >
+                    <Film className="w-4 h-4" />
+                    <span>Watch in Cinema Player</span>
+                  </button>
+                )}
+
                 <button
                   onClick={() => setIsFullscreen(true)}
                   className="flex-1 flex items-center justify-center space-x-2 px-5 py-3 bg-purple-600 hover:bg-purple-700 text-white rounded-xl text-xs sm:text-sm font-bold transition-colors shadow-sm"
@@ -323,10 +430,16 @@ export default function ProjectsPage({
                     href={selectedProject.demoUrl}
                     target="_blank"
                     rel="noreferrer noopener"
-                    className="flex-1 flex items-center justify-center space-x-2 px-5 py-3 bg-slate-900 text-white rounded-xl text-xs sm:text-sm font-semibold hover:bg-slate-800 transition-colors"
+                    className="flex-1 flex items-center justify-center space-x-2 px-5 py-3 bg-slate-900 text-white rounded-xl text-xs sm:text-sm font-semibold hover:bg-purple-600 transition-colors"
                   >
-                    <Globe className="w-4 h-4" />
-                    <span>Open Drive / Web Link</span>
+                    <ExternalLink className="w-4 h-4" />
+                    <span>
+                      {selectedProject.demoUrl.includes("vercel.app")
+                        ? "Open Vercel App Preview"
+                        : selectedProject.demoUrl.includes("drive.google.com")
+                        ? "Open Drive Asset Link"
+                        : "Visit Live Website"}
+                    </span>
                   </a>
                 )}
               </div>
@@ -355,24 +468,15 @@ export default function ProjectsPage({
           <div className="flex-1 w-full max-w-6xl flex items-center justify-center my-auto overflow-hidden relative">
             {(() => {
               const video = getEmbedUrl(selectedProject.demoUrl, selectedProject.category);
-              if (video.isVideo) {
-                if (video.isDirectVideo) {
-                  return (
-                    <video 
-                      src={video.embedUrl} 
-                      controls 
-                      autoPlay
-                      className="w-full h-full max-h-[88vh] object-contain rounded-xl"
-                    />
-                  );
-                }
+              if (video.isVideo && video.embedUrl) {
                 return (
-                  <iframe
-                    src={video.embedUrl}
-                    className="w-full h-full max-h-[88vh] aspect-video border-none rounded-xl"
-                    allow="autoplay; fullscreen; encrypted-media"
-                    allowFullScreen
+                  <VideoEmbedPlayer
+                    embedUrl={video.embedUrl}
+                    isDirectVideo={video.isDirectVideo}
                     title={selectedProject.title}
+                    category={selectedProject.category}
+                    demoUrl={selectedProject.demoUrl}
+                    className="w-full h-full max-h-[88vh] aspect-video rounded-xl overflow-hidden"
                   />
                 );
               }
@@ -382,6 +486,8 @@ export default function ProjectsPage({
                   <img
                     src={selectedProject.imageUrl}
                     alt={selectedProject.title}
+                    loading="lazy"
+                    decoding="async"
                     className="max-w-full max-h-[88vh] object-contain rounded-xl shadow-2xl"
                     referrerPolicy="no-referrer"
                   />
@@ -411,6 +517,13 @@ export default function ProjectsPage({
           </div>
         </div>
       )}
+
+      {/* Distraction-Free Cinematic Video Lightbox Modal */}
+      <VideoLightboxModal
+        project={lightboxVideoProject}
+        isOpen={!!lightboxVideoProject}
+        onClose={() => setLightboxVideoProject(null)}
+      />
     </div>
   );
 }

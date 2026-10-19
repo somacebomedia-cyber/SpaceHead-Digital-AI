@@ -18,17 +18,49 @@ import {
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 import Home from "./components/Home";
+import FloatingWhatsAppWidget from "./components/FloatingWhatsAppWidget";
 
 // Lazy-loaded Components for code-splitting
 const ServicesPage = lazy(() => import("./components/ServicesPage"));
+const ProjectEstimator = lazy(() => import("./components/ProjectEstimator"));
 const ProjectsPage = lazy(() => import("./components/ProjectsPage"));
 const BlogsPage = lazy(() => import("./components/BlogsPage"));
 const ContactPage = lazy(() => import("./components/ContactPage"));
 const AuthPage = lazy(() => import("./components/AuthPage"));
 const AdminPanel = lazy(() => import("./components/AdminPanel"));
 
-export default function App() {
-  const [currentTab, setCurrentTab] = useState<string>("home");
+function getTabFromPathname(path: string): string {
+  const clean = path.replace(/\/$/, "");
+  if (clean === "/services") return "services";
+  if (clean === "/estimator") return "estimator";
+  if (clean === "/projects") return "projects";
+  if (clean === "/blog" || clean === "/blogs" || clean.startsWith("/blog/")) return "blogs";
+  if (clean === "/contact") return "contact";
+  if (clean === "/auth") return "auth";
+  if (clean === "/admin") return "admin";
+  return "home";
+}
+
+function getPathnameFromTab(tab: string): string {
+  if (tab === "home") return "/";
+  if (tab === "blogs") return "/blog";
+  return `/${tab}`;
+}
+
+interface AppProps {
+  initialPath?: string;
+}
+
+export default function App({ initialPath }: AppProps = {}) {
+  const [currentTab, setCurrentTab] = useState<string>(() => {
+    if (initialPath) {
+      return getTabFromPathname(initialPath);
+    }
+    if (typeof window !== "undefined") {
+      return getTabFromPathname(window.location.pathname);
+    }
+    return "home";
+  });
   const [user, setUser] = useState<any>(null);
   const [authLoading, setAuthLoading] = useState(true);
 
@@ -49,13 +81,40 @@ export default function App() {
   // Transition hooks
   const [isPending, startTransition] = useTransition();
 
-  // Handle Tab Switch nicely with React 18 Transition APIs
+  // Listen to browser Back/Forward navigation
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    const handlePopState = () => {
+      const tab = getTabFromPathname(window.location.pathname);
+      setCurrentTab(tab);
+      if (window.location.pathname.startsWith("/blog/")) {
+        const blogId = window.location.pathname.replace(/^\/blog\//, "");
+        const found = blogs.find((b) => b.id === blogId);
+        if (found) setSelectedBlog(found);
+      } else {
+        setSelectedBlog(null);
+      }
+      setSelectedProject(null);
+    };
+
+    window.addEventListener("popstate", handlePopState);
+    return () => window.removeEventListener("popstate", handlePopState);
+  }, [blogs]);
+
+  // Handle Tab Switch nicely with React Transition APIs & browser history
   const handleTabChange = useCallback((tab: string) => {
     startTransition(() => {
       setCurrentTab(tab);
       // Close detailed subviews on main navigation click
       setSelectedProject(null);
       setSelectedBlog(null);
+      if (typeof window !== "undefined") {
+        const targetPath = getPathnameFromTab(tab);
+        if (window.location.pathname !== targetPath) {
+          window.history.pushState({ tab }, "", targetPath);
+        }
+      }
     });
   }, []);
 
@@ -101,7 +160,21 @@ export default function App() {
         const localBlogs = localStorage.getItem("demo_blogs");
         
         if (localProjs) {
-          setProjects(JSON.parse(localProjs));
+          const parsed = JSON.parse(localProjs) as Project[];
+          const existingIds = new Set(parsed.map((p) => p.id));
+          const merged = parsed.map((p) => {
+            const match = INITIAL_PROJECTS.find((ip) => ip.id === p.id);
+            if (match && (p.imageUrl?.includes("images.unsplash.com") || !p.imageUrl)) {
+              return { ...p, imageUrl: match.imageUrl, demoUrl: p.demoUrl || match.demoUrl, status: p.status || match.status };
+            }
+            return p;
+          });
+          for (const initP of INITIAL_PROJECTS) {
+            if (!existingIds.has(initP.id)) {
+              merged.push(initP);
+            }
+          }
+          setProjects(merged);
         } else {
           setProjects(INITIAL_PROJECTS);
           localStorage.setItem("demo_projects", JSON.stringify(INITIAL_PROJECTS));
@@ -241,7 +314,7 @@ export default function App() {
         />
 
         <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          {authLoading ? (
+          {authLoading && (currentTab === "admin" || currentTab === "auth") ? (
             <div className="flex items-center justify-center min-h-[400px]">
               <div className="flex flex-col items-center space-y-4">
                 <div className="w-10 h-10 rounded-full border-4 border-indigo-600 border-t-transparent animate-spin" />
@@ -278,6 +351,13 @@ export default function App() {
                   />
                 )}
 
+                {currentTab === "estimator" && (
+                  <ProjectEstimator 
+                    onNavigateToServices={() => handleTabChange("services")}
+                    onNavigateToContact={() => handleTabChange("contact")}
+                  />
+                )}
+
                 {currentTab === "projects" && (
                   <ProjectsPage 
                     projects={projects} 
@@ -290,9 +370,19 @@ export default function App() {
                 {currentTab === "blogs" && (
                   <BlogsPage 
                     blogs={blogs} 
-                    onSelectBlog={setSelectedBlog}
+                    onSelectBlog={(b) => {
+                      setSelectedBlog(b);
+                      if (typeof window !== "undefined") {
+                        window.history.pushState({ tab: "blogs", blogId: b.id }, "", `/blog/${b.id}`);
+                      }
+                    }}
                     selectedBlog={selectedBlog}
-                    onCloseBlog={() => setSelectedBlog(null)}
+                    onCloseBlog={() => {
+                      setSelectedBlog(null);
+                      if (typeof window !== "undefined") {
+                        window.history.pushState({ tab: "blogs" }, "", "/blog");
+                      }
+                    }}
                   />
                 )}
 
@@ -327,6 +417,10 @@ export default function App() {
       </div>
 
       <Footer onTabChange={handleTabChange} />
+
+      {currentTab !== "admin" && (
+        <FloatingWhatsAppWidget onNavigateToServices={() => handleTabChange("services")} />
+      )}
     </div>
   );
 }

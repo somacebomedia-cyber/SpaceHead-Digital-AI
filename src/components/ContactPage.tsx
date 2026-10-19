@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { collection, addDoc } from "firebase/firestore";
 import { db } from "../lib/firebase";
-import SEO from "./SEO";
+import SEO, { DEFAULT_SOUTH_AFRICA_BUSINESS_SCHEMA } from "./SEO";
 import { 
   CheckCircle, 
   Send, 
@@ -10,8 +10,11 @@ import {
   Mail,
   Phone,
   Clock,
-  Sparkles
+  Sparkles,
+  MessageCircle
 } from "lucide-react";
+import { SERVICES } from "../data/services";
+import { CONTACT_PHONE, CONTACT_PHONE_DISPLAY, CONTACT_PHONE_RAW } from "../lib/contactInfo";
 
 export default function ContactPage() {
   const [formData, setFormData] = useState({
@@ -19,7 +22,7 @@ export default function ContactPage() {
     businessName: "",
     email: "",
     phone: "",
-    service: "Premium Website Design",
+    service: SERVICES[0]?.title || "Premium Website Design",
     brief: ""
   });
 
@@ -28,10 +31,8 @@ export default function ContactPage() {
   const [quoteCode, setQuoteCode] = useState<string | null>(null);
 
   const servicesList = [
-    "Premium Website Design",
-    "AI-Powered Video Adverts",
-    "AI App Vibe Coding",
-    "Other / Custom Portfolio Deliverable"
+    ...SERVICES.map((s) => s.title),
+    "Other / Custom Deliverable"
   ];
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -111,9 +112,43 @@ export default function ContactPage() {
   return (
     <div id="contact-view" className="space-y-12 pb-16 font-sans max-w-5xl mx-auto">
       <SEO 
-        title="Request a Custom Consult | Fast SLA Business Website Design"
-        description="Submit your high-level brief for a custom business website, promotional video ad, or custom AI App prototype. Guaranteed response and custom workspace pricing code generated within 2 hours."
+        title="Contact Web Designers South Africa | Get a Quote"
+        description="Request a fast website design, promotional video ad, or custom web app quote. Guaranteed 2-hour response, direct WhatsApp chat, and ZAR pricing for South African businesses."
         canonicalUrl="https://spaceheadai.co.za/contact"
+        keywords={[
+          "contact web designer south africa",
+          "get website quote zar",
+          "web design quote johannesburg",
+          "cape town web developer contact",
+          "durban website design phone",
+          "hire web developer south africa",
+          "whatsapp web design consult",
+          "small business website help za"
+        ]}
+        geoRegion="ZA"
+        geoPlacename="South Africa"
+        breadcrumbs={[
+          { name: "Home", item: "https://spaceheadai.co.za" },
+          { name: "Contact", item: "https://spaceheadai.co.za/contact" }
+        ]}
+        jsonLd={[
+          DEFAULT_SOUTH_AFRICA_BUSINESS_SCHEMA,
+          {
+            "@context": "https://schema.org",
+            "@type": "ContactPage",
+            "name": "Contact SpaceHead AI",
+            "url": "https://spaceheadai.co.za/contact",
+            "description": "Get in touch with SpaceHead AI for website design, promotional video ads, and software solutions for South African businesses.",
+            "mainEntity": {
+              "@type": "ContactPoint",
+              "telephone": "+27735398287",
+              "email": "spaceheadai@gmail.com",
+              "contactType": "customer service and sales",
+              "areaServed": "ZA",
+              "availableLanguage": ["English", "Afrikaans", "isiZulu"]
+            }
+          }
+        ]}
       />
       
       {/* Header */}
@@ -152,14 +187,20 @@ export default function ContactPage() {
               </div>
 
               <div className="flex items-start space-x-3 text-xs">
-                <div className="w-8 h-8 rounded-lg bg-purple-50 text-purple-600 flex items-center justify-center flex-shrink-0 border border-purple-100">
-                  <Phone className="w-4 h-4" />
+                <div className="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center flex-shrink-0 border border-emerald-100">
+                  <MessageCircle className="w-4 h-4" />
                 </div>
                 <div>
-                  <span className="text-slate-400 block font-mono text-[9.5px] uppercase">WhatsApp Hotdesk</span>
-                  <span className="font-bold text-slate-900">
-                    +27 (0) 65 890 4321
-                  </span>
+                  <span className="text-slate-400 block font-mono text-[9.5px] uppercase">WhatsApp Business Line</span>
+                  <a
+                    href={`https://wa.me/${CONTACT_PHONE_RAW}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="font-bold text-slate-900 hover:text-emerald-600 transition-colors inline-flex items-center gap-1.5"
+                  >
+                    <span>{CONTACT_PHONE_DISPLAY}</span>
+                    <span className="text-[10px] text-emerald-600 font-mono font-semibold">({CONTACT_PHONE})</span>
+                  </a>
                 </div>
               </div>
 
@@ -185,7 +226,7 @@ export default function ContactPage() {
               Sovereign SLA
             </h4>
             <p className="text-[11px] text-slate-300 leading-relaxed font-sans">
-              All creative builds are backed by 3 months of free maintenance. We manage configuration updates, local host tuning, and server speed monitoring so your brand remains elite.
+              Every website build includes ongoing monitoring, security maintenance, and local host tuning so your brand remains fast, secure, and reliable.
             </p>
           </div>
         </div>
@@ -291,7 +332,7 @@ export default function ContactPage() {
                     required
                     value={formData.phone}
                     onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                    placeholder="e.g. 065 890 4321"
+                    placeholder="e.g. 079 448 6843"
                     className="w-full bg-slate-50/50 border border-slate-200 rounded-xl px-4 py-2.5 text-xs focus:outline-none focus:border-indigo-500 focus:bg-white focus:ring-1 focus:ring-indigo-500 transition-all text-slate-800 placeholder-slate-400"
                   />
                 </div>

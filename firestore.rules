@@ -1,11 +1,6 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    // catch-all rule
-    match /{document=**} {
-      allow read, write: if false;
-    }
-
     function isValidId(id) {
       return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
     }
@@ -31,7 +26,7 @@ service cloud.firestore {
           && data.description is string && data.description.size() <= 1000
           && data.category is string && data.category.size() <= 100
           && data.tags is list && data.tags.size() <= 20
-          && data.createdAt is int
+          && data.createdAt is number
           && data.userId is string && data.userId.size() <= 100
           && data.isPublic is bool;
     }
@@ -43,11 +38,25 @@ service cloud.firestore {
           && data.content is string && data.content.size() <= 10000
           && data.category is string && data.category.size() <= 100
           && data.tags is list && data.tags.size() <= 20
-          && data.createdAt is int
-          && data.updatedAt is int
+          && data.createdAt is number
+          && data.updatedAt is number
           && data.userId is string && data.userId.size() <= 100
           && data.authorName is string && data.authorName.size() <= 100
           && data.isPublished is bool;
+    }
+
+    function isValidBrief(data) {
+      return data.name is string && data.name.size() <= 100
+          && data.email is string && data.email.size() <= 200
+          && data.phone is string && data.phone.size() <= 50
+          && data.brief is string && data.brief.size() <= 5000;
+    }
+
+    function isValidLead(data) {
+      return data.name is string && data.name.size() <= 100
+          && data.email is string && data.email.size() <= 200
+          && data.phone is string && data.phone.size() <= 50
+          && data.brief is string && data.brief.size() <= 5000;
     }
 
     match /projects/{projectId} {
@@ -67,5 +76,22 @@ service cloud.firestore {
     match /settings/{userId} {
       allow get, write: if isValidId(userId) && isSignedIn() && request.auth.uid == userId;
     }
+
+    match /project_briefs/{briefId} {
+      allow create: if isValidBrief(incoming());
+      allow read: if isSignedIn();
+      allow update: if isSignedIn() && isValidBrief(incoming());
+      allow delete: if isSignedIn();
+    }
+
+    match /workspace_leads/{leadId} {
+      allow create: if isValidLead(incoming());
+      allow read: if isSignedIn();
+      allow update: if isSignedIn() && isValidLead(incoming());
+      allow delete: if isSignedIn();
+    }
   }
 }
+
+
+

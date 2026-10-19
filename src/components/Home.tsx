@@ -1,75 +1,21 @@
 import React from "react";
 import { Project, BlogPost } from "../types";
 import SpaceHeadLogo from "./SpaceHeadLogo";
-import SEO from "./SEO";
+import SEO, { DEFAULT_SOUTH_AFRICA_BUSINESS_SCHEMA } from "./SEO";
 import { 
   ArrowRight, 
   Briefcase,
   Laptop,
   Video,
   Code,
-  Mail
+  Mail,
+  Calculator
 } from "lucide-react";
-import ServiceCard, { ServiceCardData } from "./ServiceCard";
+import ServiceCard from "./ServiceCard";
 import DeviceShowcase from "./DeviceShowcase";
-
-const HOME_SERVICE_CARDS: ServiceCardData[] = [
-  {
-    id: "web-design",
-    title: "Premium Website Design",
-    category: "Web Development",
-    badge: "SAVE 56% UPFRONT • R399 SETUP PLAN",
-    description:
-      "Bespoke high-performance digital presences. Pay R3,499 upfront (SAVE 56% / Save R4,500 off standard R7,999 value), or start for R399 setup + R150/mo subscription over 50 months.",
-    price: "R399",
-    originalPrice: "R7,999",
-    period: "setup + R150/mo",
-    features: [
-      "Save 56% (Save R4,500) on R3,499 upfront option",
-      "OR R399 setup + R150/mo over 50 months (R7,999 value)",
-      "Data-light mobile optimization & local SEO",
-    ],
-    image: "https://lh3.googleusercontent.com/d/1nLpdWKVSUSvAh2JrtsP7EfKGUIkH6ym6=w1000",
-    accent: "indigo",
-    featured: true,
-  },
-  {
-    id: "video-ads",
-    title: "AI Video Adverts",
-    category: "Animated Videos",
-    badge: "SAVE 58% • LOCAL BOOSTER",
-    description:
-      "High-converting promos compressed and tailored for WhatsApp Business, Facebook Lite, and local feeds. Save 58% off standard video creation (R399 vs R950).",
-    price: "R399",
-    originalPrice: "R950",
-    period: "per video",
-    features: [
-      "Save 58% off standard agency pricing",
-      "Perfect for WhatsApp & FB Statuses",
-      "30-second promo variants included",
-    ],
-    image: "https://lh3.googleusercontent.com/d/1546AScUm3fseqml8dfgHEKo5t9TOfx7N=w1000",
-    accent: "purple",
-  },
-  {
-    id: "vibe-coding",
-    title: "AI App Vibe Coding",
-    category: "App Development",
-    badge: "SAVE 55% UPFRONT • R399 SETUP PLAN",
-    description:
-      "Full-stack workflow and order tools built rapidly using AI. Pay R8,999 upfront (SAVE 55% / Save R11,000 off standard R19,999 value), or start for R399 setup + R150/mo over 130 months.",
-    price: "R399",
-    originalPrice: "R19,999",
-    period: "setup + R150/mo",
-    features: [
-      "Save 55% (Save R11,000) on R8,999 upfront option",
-      "OR R399 setup + R150/mo over 130 months (R19,999 value)",
-      "Live dashboards & DB-connected tools",
-    ],
-    image: "https://lh3.googleusercontent.com/d/17U_APICMOCc44uJCSl6PkHReYuijxThu=w1000",
-    accent: "emerald",
-  },
-];
+import ClientShowcase from "./ClientShowcase";
+import TestimonialsStrip from "./TestimonialsStrip";
+import { SERVICES } from "../data/services";
 
 interface HomeProps {
   projects: Project[];
@@ -83,9 +29,40 @@ export default function Home({ projects, blogs, onTabChange, onSelectProject, on
   return (
     <div id="home-view" className="space-y-16 pb-20 font-sans">
       <SEO 
-        title="Premium Business Website Design & Production"
-        description="We design bespoke digital presences, high-converting animated promotional video ads, and next-generation AI applications engineered with world-class precision."
+        title="Web Design, Video Ads & SEO for South African Businesses"
+        description="High-converting bespoke websites, animated promotional video ads, PayFast payments, and local SEO for businesses across Johannesburg, Cape Town, Durban and South Africa."
         canonicalUrl="https://spaceheadai.co.za"
+        keywords={[
+          "web design south africa",
+          "website designer johannesburg",
+          "cape town web design",
+          "durban digital marketing",
+          "local business websites za",
+          "video ads south africa",
+          "payfast website integration",
+          "google maps local seo south africa",
+          "south african small business marketing",
+          "affordable web design packages zar"
+        ]}
+        geoRegion="ZA"
+        geoPlacename="South Africa"
+        breadcrumbs={[
+          { name: "Home", item: "https://spaceheadai.co.za" }
+        ]}
+        jsonLd={[
+          DEFAULT_SOUTH_AFRICA_BUSINESS_SCHEMA,
+          {
+            "@context": "https://schema.org",
+            "@type": "WebSite",
+            "name": "SpaceHead AI",
+            "url": "https://spaceheadai.co.za",
+            "potentialAction": {
+              "@type": "SearchAction",
+              "target": "https://spaceheadai.co.za/services?q={search_term_string}",
+              "query-input": "required name=search_term_string"
+            }
+          }
+        ]}
       />
       
       {/* Redesigned Premium Hero inspired by Reference Images */}
@@ -167,10 +144,51 @@ export default function Home({ projects, blogs, onTabChange, onSelectProject, on
         </div>
       </section>
 
+      {/* Client Showcase Section - Social Proof Partner Company Logo Grid */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <ClientShowcase
+          onExplorePortfolio={() => onTabChange("portfolio")}
+          onSelectProject={onSelectProject}
+          projects={projects}
+        />
+      </section>
+
+      {/* Interactive AI Estimator Callout Strip */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="bg-white border border-slate-200/80 rounded-2xl p-5 sm:p-6 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div className="flex items-center space-x-3.5 text-center sm:text-left">
+            <div className="w-10 h-10 rounded-xl bg-indigo-50 flex items-center justify-center text-indigo-600 flex-shrink-0">
+              <Calculator className="w-5 h-5" />
+            </div>
+            <div>
+              <div className="flex items-center space-x-2">
+                <span className="text-sm font-bold text-slate-900">
+                  Interactive AI Project Estimator & Scope Calculator
+                </span>
+                <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-indigo-50 text-indigo-700 border border-indigo-100 hidden sm:inline">
+                  Instant PDF Proposals
+                </span>
+              </div>
+              <p className="text-xs text-slate-500 mt-0.5">
+                Configure your custom web app or SaaS requirements, simulate business ROI, and download a branded PDF quotation in real time.
+              </p>
+            </div>
+          </div>
+
+          <button
+            onClick={() => onTabChange("estimator")}
+            className="flex-shrink-0 inline-flex items-center space-x-2 px-5 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl font-bold text-xs shadow-sm transition-all cursor-pointer"
+          >
+            <span>Launch Estimator</span>
+            <ArrowRight className="w-3.5 h-3.5" />
+          </button>
+        </div>
+      </section>
+
       {/* Benefit Cards — shared ServiceCard component, kept in sync with ServicesPage */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 items-start pt-3">
-          {HOME_SERVICE_CARDS.map((item) => (
+          {SERVICES.map((item) => (
             <ServiceCard
               key={item.id}
               data={item}
@@ -181,6 +199,10 @@ export default function Home({ projects, blogs, onTabChange, onSelectProject, on
         </div>
       </section>
 
+      {/* Social Proof & Client Testimonials Strip */}
+      <section className="px-4 sm:px-6 lg:px-8">
+        <TestimonialsStrip onNavigateToServices={() => onTabChange("services")} />
+      </section>
     </div>
   );
 }

@@ -7,6 +7,7 @@ import {
 import { auth } from "../lib/firebase";
 import { signInWithGoogle } from "../lib/googleDriveService";
 import { Mail, Lock, UserPlus, LogIn, AlertCircle, Sparkles } from "lucide-react";
+import SEO from "./SEO";
 
 interface AuthPageProps {
   onAuthSuccess: (user: any) => void;
@@ -101,6 +102,12 @@ export default function AuthPage({ onAuthSuccess, onEnterDemo }: AuthPageProps) 
 
   return (
     <div id="auth-view" className="max-w-md mx-auto py-12 px-4 sm:px-6">
+      <SEO
+        title="Client Portal & Workspace Sign In"
+        description="Sign in to the SpaceHead AI client portal to review project updates, deliverable previews, and website launch schedules."
+        canonicalUrl="https://spaceheadai.co.za/auth"
+        noindex={true}
+      />
       <div className="bg-white border border-slate-200 rounded-3xl p-8 shadow-xl space-y-8 relative overflow-hidden">
         <div className="absolute -top-24 -left-24 w-48 h-48 bg-orange-500/10 rounded-full blur-2xl pointer-events-none" />
         

@@ -32,9 +32,26 @@ app.get("/api/health", (_req, res) => {
 // API Route for Payfast Payment Creation
 app.post("/api/payfast/create-payment", (req, res) => {
   try {
-    const { amountRands, itemName, itemDescription, paymentId, returnPath, cancelPath, customStr1, customStr2, email, firstName, lastName } = req.body;
-    if (!amountRands || Number(amountRands) <= 0) {
-      return res.status(400).json({ error: "Invalid payment amount specified" });
+    const {
+      planId,
+      amountRands,
+      itemName,
+      itemDescription,
+      paymentId,
+      returnPath,
+      cancelPath,
+      customStr1,
+      customStr2,
+      email,
+      firstName,
+      lastName,
+      cellNumber,
+      recurring,
+    } = req.body;
+
+    // If neither a valid planId nor a positive amount is provided, reject
+    if (!planId && (!amountRands || Number(amountRands) <= 0)) {
+      return res.status(400).json({ error: "Invalid payment plan or amount specified" });
     }
 
     const host = req.headers["x-forwarded-host"] || req.headers.host || "spaceheadai.co.za";
@@ -42,7 +59,8 @@ app.post("/api/payfast/create-payment", (req, res) => {
     const origin = (req.headers.origin as string) || `${proto}://${host}`;
 
     const payment = createPayfastPayment({
-      amountRands: Number(amountRands),
+      planId,
+      amountRands: amountRands ? Number(amountRands) : undefined,
       itemName: itemName || "SpaceHead AI Digital Service",
       itemDescription,
       paymentId,
@@ -54,6 +72,15 @@ app.post("/api/payfast/create-payment", (req, res) => {
       email,
       firstName,
       lastName,
+      cellNumber,
+      recurring: recurring
+        ? {
+            billingDate: recurring.billingDate,
+            recurringAmountRands: Number(recurring.recurringAmountRands),
+            frequency: 3,
+            cycles: Number(recurring.cycles),
+          }
+        : undefined,
     });
 
     res.json(payment);
@@ -80,8 +107,19 @@ app.post("/api/payfast/notify", async (req, res) => {
     const paymentId = postData.m_payment_id;
     const pfPaymentId = postData.pf_payment_id;
     const amountGross = postData.amount_gross;
+    // Present only on recurring/subscription-related ITNs, per Payfast's docs —
+    // its presence is how we tell "deposit just paid" apart from
+    // "this month's automatic installment just landed."
+    const subscriptionToken = postData.token;
 
-    console.log(`Payfast payment confirmed! Status: ${paymentStatus}, Order ID: ${paymentId}, Payfast ID: ${pfPaymentId}, Amount: R${amountGross}`);
+    if (subscriptionToken) {
+      console.log(
+        `Payfast RECURRING charge received. Status: ${paymentStatus}, Order ID: ${paymentId}, ` +
+        `Payfast ID: ${pfPaymentId}, Amount: R${amountGross}, Subscription token: ${subscriptionToken}`
+      );
+    } else {
+      console.log(`Payfast payment confirmed! Status: ${paymentStatus}, Order ID: ${paymentId}, Payfast ID: ${pfPaymentId}, Amount: R${amountGross}`);
+    }
 
     // This is the ONLY place an order is marked paid. It's server-to-server and
     // signature-verified above, so it can't be spoofed by a browser redirect.

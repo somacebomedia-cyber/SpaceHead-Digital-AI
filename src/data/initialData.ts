@@ -3,16 +3,17 @@ import { Project, BlogPost } from "../types";
 export const INITIAL_PROJECTS: Project[] = [
   {
     id: "proj-saas-stacfund",
-    title: "StacFund AI — SA SME Funding Discovery & Document Generation Platform",
-    description: "South African business funding discovery and document generation platform targeting entrepreneurs and SMEs seeking NYDA, SEFA, NEF, and IDC funding. Originally built as 'FundHub' in Google AI Studio, featuring a cosmic space purple brand identity, tiered multi-batch Gemini orchestrator (generating up to 95-page business plans), PWA mobile installability, and the 'SA Funding Pulse' intelligence layer.",
+    title: "StacFund — AI Business Funding & Pitch Platform",
+    description: "Gamified business funding platform that simplifies grants, loans, and equity applications with step-by-step progress tracking, AI-powered investor matching, automated business plan creation, and pitch deck generation. Currently under active development, engineered for high-growth startups and SMEs.",
     category: "SaaS & Web Apps",
-    tags: ["SaaS", "SME Funding", "NYDA / SEFA / NEF / IDC", "Cosmic Purple", "Multi-Batch Gemini", "SA Funding Pulse", "PWA Installable"],
-    demoUrl: "",
+    tags: ["SaaS", "In Active Development", "FinTech", "AI Grants & Loans", "Pitch Decks", "Vercel Live Preview"],
+    demoUrl: "https://stac-fund-ai.vercel.app/",
     githubUrl: "https://github.com/spaceheadai/stacfund-ai",
-    imageUrl: "https://images.unsplash.com/photo-1551288049-bebda4e38f71?q=80&w=800&auto=format&fit=crop",
-    createdAt: 1773100000000,
+    imageUrl: "https://stac-fund-ai.vercel.app/icon.png",
+    createdAt: 1773101000000,
     userId: "system",
-    isPublic: true
+    isPublic: true,
+    status: "In Active Development"
   },
   {
     id: "proj-saas-incutrack",
@@ -22,23 +23,24 @@ export const INITIAL_PROJECTS: Project[] = [
     tags: ["SaaS", "Incubation Platform", "Esayidi TVET", "36-Month Tracking"],
     demoUrl: "",
     githubUrl: "",
-    imageUrl: "https://images.unsplash.com/photo-1460925895917-afdab827c52f?q=80&w=800&auto=format&fit=crop",
+    imageUrl: "https://esayiditvet.co.za/2025/wp-content/uploads/2023/02/footerlogo-300x171.png",
     createdAt: 1773099000000,
     userId: "system",
     isPublic: true
   },
   {
     id: "proj-saas-nurserynet",
-    title: "NurseryNet — Preschool & ECD Portal",
-    description: "Dedicated cloud management portal for early childhood development centers and nursery owners, streamlining operational administration, curriculum tracking, and real-time parent communications.",
+    title: "NurseryNet — Early Childhood Education Platform",
+    description: "South African early childhood education platform connecting parents with verified preschools and empowering nursery owners with AI-powered marketing tools, funding discovery finders, and cloud growth resources. Currently under active development, featuring interactive school discovery, owner portal, and mobile-first experience.",
     category: "SaaS & Web Apps",
-    tags: ["SaaS", "Preschool Management", "EdTech", "Cloud Portal"],
-    demoUrl: "",
+    tags: ["SaaS", "In Active Development", "EdTech", "Preschool Finder", "AI Tools", "Vercel Live Preview"],
+    demoUrl: "https://nursery-net.vercel.app/",
     githubUrl: "",
-    imageUrl: "https://images.unsplash.com/photo-1503676260728-1c00da094a0b?q=80&w=800&auto=format&fit=crop",
-    createdAt: 1773098000000,
+    imageUrl: "https://ik.imagekit.io/wugvdm3ddq/Iconnew-512x512.png?updatedAt=1764044488330&v=4",
+    createdAt: 1773100500000,
     userId: "system",
-    isPublic: true
+    isPublic: true,
+    status: "In Active Development"
   },
   {
     id: "proj-saas-studioflow",
@@ -48,7 +50,7 @@ export const INITIAL_PROJECTS: Project[] = [
     tags: ["SaaS", "Creative Workflow", "Media Asset Management", "Agency Automation"],
     demoUrl: "",
     githubUrl: "",
-    imageUrl: "https://images.unsplash.com/photo-1542744094-3a3172720177?q=80&w=800&auto=format&fit=crop",
+    imageUrl: "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 800 500' width='800' height='500'><rect width='800' height='500' fill='%230b0f19'/><g transform='translate(260, 140)'><rect x='0' y='70' width='18' height='60' rx='9' fill='%23a855f7'/><rect x='40' y='35' width='18' height='130' rx='9' fill='%23c084fc'/><rect x='80' y='10' width='18' height='180' rx='9' fill='%23818cf8'/><rect x='120' y='45' width='18' height='110' rx='9' fill='%236366f1'/><rect x='160' y='75' width='18' height='50' rx='9' fill='%234f46e5'/></g><text x='400' y='380' font-family='system-ui, sans-serif' font-size='32' font-weight='800' fill='%23ffffff' text-anchor='middle' letter-spacing='2'>STUDIOFLOW</text><text x='400' y='415' font-family='system-ui, sans-serif' font-size='14' font-weight='600' fill='%2394a3b8' text-anchor='middle' letter-spacing='4'>CREATIVE WORKFLOW SUITE</text></svg>",
     createdAt: 1773097000000,
     userId: "system",
     isPublic: true
@@ -61,7 +63,7 @@ export const INITIAL_PROJECTS: Project[] = [
     tags: ["Web Design", "Preschool", "Umzimkhulu", "Active Management"],
     demoUrl: "https://www.nawilearn.co.za",
     githubUrl: "",
-    imageUrl: "https://images.unsplash.com/photo-1503676260728-1c00da094a0b?q=80&w=800&auto=format&fit=crop",
+    imageUrl: "https://lh3.googleusercontent.com/d/1Wly0YL5g_Mpase3z0-QP5f2KwWg-jVve",
     createdAt: 1773090500000,
     userId: "system",
     isPublic: true

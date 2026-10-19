@@ -56,22 +56,26 @@ export default function DeviceShowcase({
       <div className="absolute w-[280px] sm:w-[380px] h-[280px] sm:h-[380px] bg-gradient-to-tr from-indigo-600/30 to-purple-600/20 rounded-full blur-3xl pointer-events-none" />
 
       {/* Primary Main Device */}
-      <div className="relative w-[280px] sm:w-[380px] lg:w-[420px] transition-transform duration-500 hover:scale-[1.02] z-10">
+      <div className="relative w-[280px] sm:w-[380px] lg:w-[420px] aspect-[16/10] flex items-center justify-center transition-transform duration-500 hover:scale-[1.02] z-10">
         <img
           src={primarySources[primaryIndex]}
           alt="SpaceHead Desktop Platform Render"
-          className="w-full h-auto object-contain drop-shadow-[0_25px_50px_rgba(0,0,0,0.55)] rounded-2xl"
+          loading="eager"
+          decoding="async"
+          className="w-full h-full object-contain drop-shadow-[0_25px_50px_rgba(0,0,0,0.55)] rounded-2xl transition-opacity duration-300"
           onError={handlePrimaryError}
           referrerPolicy="no-referrer"
         />
       </div>
 
       {/* Secondary Overlapping Mobile Device */}
-      <div className="absolute -bottom-2 -right-2 sm:right-4 w-[160px] sm:w-[220px] lg:w-[240px] transition-transform duration-500 hover:scale-105 z-20">
+      <div className="absolute -bottom-2 -right-2 sm:right-4 w-[160px] sm:w-[220px] lg:w-[240px] aspect-[9/18.5] flex items-center justify-center transition-transform duration-500 hover:scale-105 z-20">
         <img
           src={secondarySources[secondaryIndex]}
           alt="SpaceHead Mobile App Render"
-          className="w-full h-auto object-contain drop-shadow-[0_20px_40px_rgba(0,0,0,0.65)] rounded-2xl"
+          loading="eager"
+          decoding="async"
+          className="w-full h-full object-contain drop-shadow-[0_20px_40px_rgba(0,0,0,0.65)] rounded-2xl transition-opacity duration-300"
           onError={handleSecondaryError}
           referrerPolicy="no-referrer"
         />

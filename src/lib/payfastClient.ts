@@ -1,9 +1,10 @@
 /**
  * Client-side helper to initiate Payfast payment checkout
  */
-export async function initiatePayfastPayment(params: {
-  amountRands: number;
-  itemName: string;
+export interface InitiatePayfastPaymentParams {
+  planId?: string;
+  amountRands?: number;
+  itemName?: string;
   itemDescription?: string;
   paymentId?: string;
   returnPath?: string;
@@ -13,7 +14,16 @@ export async function initiatePayfastPayment(params: {
   email?: string;
   firstName?: string;
   lastName?: string;
-}): Promise<void> {
+  cellNumber?: string;
+  /** Omit for a normal once-off payment. See payfastService.ts for details. */
+  recurring?: {
+    billingDate: string;
+    recurringAmountRands: number;
+    cycles: number;
+  };
+}
+
+export async function initiatePayfastPayment(params: InitiatePayfastPaymentParams): Promise<void> {
   const response = await fetch("/api/payfast/create-payment", {
     method: "POST",
     headers: {

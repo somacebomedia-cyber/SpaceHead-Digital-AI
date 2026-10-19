@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Code, BookOpen, User, LayoutDashboard, LogOut, Menu, X, Layers, Briefcase, Mail } from "lucide-react";
+import { Code, BookOpen, User, LayoutDashboard, LogOut, Menu, X, Layers, Briefcase, Mail, Calculator } from "lucide-react";
 import SpaceHeadLogo from "./SpaceHeadLogo";
 
 interface NavbarProps {
@@ -15,6 +15,7 @@ export default function Navbar({ currentTab, onTabChange, user, onLogout }: Navb
   const navItems = [
     { id: "home", label: "Home", icon: Layers },
     { id: "services", label: "Services", icon: Briefcase },
+    { id: "estimator", label: "AI Estimator", icon: Calculator, badge: "Live" },
     { id: "projects", label: "Portfolio", icon: Code },
     { id: "blogs", label: "Blog", icon: BookOpen },
     { id: "contact", label: "Contact", icon: Mail },
@@ -51,7 +52,7 @@ export default function Navbar({ currentTab, onTabChange, user, onLogout }: Navb
                   key={item.id}
                   id={`nav-item-${item.id}`}
                   onClick={() => onTabChange(item.id)}
-                  className={`flex items-center space-x-1.5 px-4 py-2 rounded-lg font-sans text-sm font-medium transition-all duration-200 ${
+                  className={`flex items-center space-x-1.5 px-3.5 py-2 rounded-lg font-sans text-sm font-medium transition-all duration-200 ${
                     isActive
                       ? "bg-slate-900 text-white shadow-sm"
                       : "text-slate-600 hover:bg-slate-50 hover:text-slate-900"
@@ -60,6 +61,13 @@ export default function Navbar({ currentTab, onTabChange, user, onLogout }: Navb
                 >
                   <Icon className="w-4 h-4" />
                   <span>{item.label}</span>
+                  {item.badge && (
+                    <span className={`text-[9px] font-mono font-bold px-1.5 py-0.5 rounded-full ${
+                      isActive ? "bg-indigo-500 text-white" : "bg-indigo-50 text-indigo-700 border border-indigo-200"
+                    }`}>
+                      {item.badge}
+                    </span>
+                  )}
                 </button>
               );
             })}

@@ -1,7 +1,11 @@
-import { useState, useMemo, useTransition, FormEvent } from "react";
+import { useState, useMemo, useTransition, FormEvent, useCallback, useEffect } from "react";
 import GoogleGmailManager from "./GoogleGmailManager";
 import GoogleDriveManager from "./GoogleDriveManager";
-import { Project, BlogPost } from "../types";
+import ClientLeadsDashboard from "./ClientLeadsDashboard";
+import AdminAiStudio from "./AdminAiStudio";
+import SEO from "./SEO";
+import { Project, BlogPost, ClientLeadInquiry } from "../types";
+import { fetchInboundLeads } from "../lib/firebaseServices";
 import { 
   BarChart, 
   Bar, 
@@ -28,7 +32,10 @@ import {
   Activity, 
   Settings, 
   X, 
-  ArrowLeft 
+  ArrowLeft,
+  Users,
+  MessageSquare,
+  Sparkles
 } from "lucide-react";
 
 interface AdminPanelProps {
@@ -54,8 +61,32 @@ export default function AdminPanel({
   onUpdateBlog,
   onDeleteBlog
 }: AdminPanelProps) {
-  const [activeSubTab, setActiveSubTab] = useState<"analytics" | "projects" | "blogs" | "gmail" | "drive">("analytics");
+  const [activeSubTab, setActiveSubTab] = useState<"analytics" | "leads" | "ai_studio" | "projects" | "blogs" | "gmail" | "drive">("analytics");
   const [isPending, startTransition] = useTransition();
+
+  // Inbound Client Leads & Inquiries State
+  const [leads, setLeads] = useState<ClientLeadInquiry[]>([]);
+  const [leadsLoading, setLeadsLoading] = useState(false);
+
+  const loadLeads = useCallback(async () => {
+    setLeadsLoading(true);
+    try {
+      const data = await fetchInboundLeads();
+      setLeads(data);
+    } catch (err) {
+      console.error("Failed to load inbound leads:", err);
+    } finally {
+      setLeadsLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    loadLeads();
+  }, [loadLeads]);
+
+  const newLeadsCount = useMemo(() => {
+    return leads.filter((l) => l.status === "New").length;
+  }, [leads]);
 
   // Project Editing State
   const [editingProject, setEditingProject] = useState<Project | null>(null);
@@ -107,6 +138,14 @@ export default function AdminPanel({
     });
     return Object.entries(counts).map(([name, value]) => ({ name, value }));
   }, [blogs]);
+
+  const leadStatusData = useMemo(() => {
+    const counts: Record<string, number> = {};
+    leads.forEach((l) => {
+      counts[l.status] = (counts[l.status] || 0) + 1;
+    });
+    return Object.entries(counts).map(([name, value]) => ({ name, value }));
+  }, [leads]);
 
   const COLORS = ["#f97316", "#eab308", "#10b981", "#3b82f6", "#6366f1", "#a855f7"];
 
@@ -231,6 +270,12 @@ export default function AdminPanel({
 
   return (
     <div id="admin-view" className="space-y-10 pb-16">
+      <SEO
+        title="Admin Command Center"
+        description="Administrative control center for SpaceHead AI."
+        canonicalUrl="https://spaceheadai.co.za/admin"
+        noindex={true}
+      />
       {/* Studio Banner */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-slate-900 text-white p-6 sm:p-8 rounded-3xl mt-6 relative overflow-hidden shadow-xl">
         <div className="absolute top-0 right-0 w-64 h-64 bg-orange-500/10 rounded-full blur-2xl pointer-events-none" />
@@ -263,6 +308,32 @@ export default function AdminPanel({
             }`}
           >
             Analytics Panel
+          </button>
+          <button
+            onClick={() => setActiveSubTab("leads")}
+            className={`relative text-xs font-semibold px-4 py-2.5 rounded-xl transition-all flex items-center space-x-1.5 ${
+              activeSubTab === "leads"
+                ? "bg-white text-slate-900"
+                : "bg-slate-800 text-slate-300 hover:bg-slate-700"
+            }`}
+          >
+            <span>Inquiries & Leads ({leads.length})</span>
+            {newLeadsCount > 0 && (
+              <span className="inline-flex items-center px-1.5 py-0.5 rounded-full text-[10px] font-bold bg-indigo-500 text-white animate-pulse">
+                {newLeadsCount} new
+              </span>
+            )}
+          </button>
+          <button
+            onClick={() => setActiveSubTab("ai_studio")}
+            className={`text-xs font-semibold px-4 py-2.5 rounded-xl transition-all flex items-center space-x-1.5 ${
+              activeSubTab === "ai_studio"
+                ? "bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-md"
+                : "bg-slate-800 text-indigo-300 hover:bg-slate-700 hover:text-white"
+            }`}
+          >
+            <Sparkles className="w-3.5 h-3.5" />
+            <span>AI Content Studio</span>
           </button>
           <button
             onClick={() => setActiveSubTab("projects")}
@@ -311,7 +382,7 @@ export default function AdminPanel({
       {activeSubTab === "analytics" && (
         <div className="space-y-10 animate-in fade-in duration-200">
           {/* Quick Info Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             <div className="bg-white border border-slate-200 p-6 rounded-2xl shadow-sm">
               <div className="flex justify-between items-center text-slate-400">
                 <span className="text-xs font-bold uppercase tracking-wider">Total Portfolio Items</span>
@@ -331,6 +402,24 @@ export default function AdminPanel({
               <div className="text-3xl font-sans font-extrabold text-slate-900 mt-2">{blogs.length}</div>
               <div className="text-[10px] text-slate-400 mt-1">
                 {blogs.filter((b) => b.isPublished).length} published articles
+              </div>
+            </div>
+
+            {/* Inbound Client Leads Card */}
+            <div 
+              onClick={() => setActiveSubTab("leads")}
+              className="bg-white border border-slate-200 hover:border-indigo-300 p-6 rounded-2xl shadow-sm cursor-pointer transition-all group"
+            >
+              <div className="flex justify-between items-center text-slate-400">
+                <span className="text-xs font-bold uppercase tracking-wider text-indigo-600">Inbound Client Leads</span>
+                <Users className="w-4 h-4 text-indigo-500 group-hover:scale-110 transition-transform" />
+              </div>
+              <div className="text-3xl font-sans font-extrabold text-slate-900 mt-2">{leads.length}</div>
+              <div className="text-[10px] text-slate-500 mt-1 flex items-center justify-between">
+                <span className="font-semibold text-indigo-600">
+                  {newLeadsCount > 0 ? `${newLeadsCount} new action needed` : "Pipeline active"}
+                </span>
+                <span className="text-slate-400 group-hover:text-indigo-600 font-mono text-[10px]">Open CRM →</span>
               </div>
             </div>
 
@@ -407,7 +496,96 @@ export default function AdminPanel({
               </div>
             </div>
           </div>
+
+          {/* Inbound Leads Pipeline Stages Panel */}
+          <div className="bg-white border border-slate-200 p-6 rounded-2xl shadow-sm space-y-4">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
+              <div>
+                <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-indigo-600">
+                  CRM Deal Pipeline
+                </span>
+                <h3 className="font-sans font-bold text-slate-900 text-base">
+                  Inbound Client Inquiries & Leads by Stage
+                </h3>
+              </div>
+              <button
+                onClick={() => setActiveSubTab("leads")}
+                className="text-xs font-bold text-indigo-600 hover:text-indigo-700 hover:underline flex items-center space-x-1 cursor-pointer"
+              >
+                <span>Open Full Leads Dashboard ({leads.length})</span>
+                <ArrowLeft className="w-3.5 h-3.5 rotate-180" />
+              </button>
+            </div>
+
+            <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-3 pt-1">
+              {[
+                { name: "New", color: "text-indigo-600 bg-indigo-50 border-indigo-100" },
+                { name: "Contacted", color: "text-amber-600 bg-amber-50 border-amber-100" },
+                { name: "In Progress", color: "text-sky-600 bg-sky-50 border-sky-100" },
+                { name: "Proposal Sent", color: "text-purple-600 bg-purple-50 border-purple-100" },
+                { name: "Converted", color: "text-emerald-600 bg-emerald-50 border-emerald-100" },
+                { name: "Archived", color: "text-slate-600 bg-slate-100 border-slate-200" },
+                { name: "Spam", color: "text-rose-600 bg-rose-50 border-rose-100" }
+              ].map((stage) => {
+                const count = leads.filter((l) => l.status === stage.name).length;
+                return (
+                  <div
+                    key={stage.name}
+                    onClick={() => setActiveSubTab("leads")}
+                    className={`p-3 rounded-xl border ${stage.color} hover:shadow-xs transition-all cursor-pointer text-center`}
+                  >
+                    <div className="text-[10px] font-mono font-bold uppercase tracking-wider opacity-80">
+                      {stage.name}
+                    </div>
+                    <div className="text-xl font-bold font-sans mt-1">
+                      {count}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
         </div>
+      )}
+
+      {/* Inquiries & Client Leads Sub Tab */}
+      {activeSubTab === "leads" && (
+        <ClientLeadsDashboard
+          leads={leads}
+          onRefresh={loadLeads}
+          isLoading={leadsLoading}
+        />
+      )}
+
+      {/* AI Content Studio Sub Tab */}
+      {activeSubTab === "ai_studio" && (
+        <AdminAiStudio
+          onApplyToBlogEditor={(draft) => {
+            setActiveSubTab("blogs");
+            setIsAddingBlog(true);
+            setEditingBlog(null);
+            setBlogTitle(draft.title);
+            setBlogSlug(draft.slug);
+            setBlogSummary(draft.summary);
+            setBlogContent(draft.content);
+            setBlogCat(draft.category);
+            setBlogTags(draft.tags.join(", "));
+            setBlogPublished(true);
+          }}
+          onApplyToProjectEditor={(draft) => {
+            setActiveSubTab("projects");
+            setIsAddingProject(true);
+            setEditingProject(null);
+            setProjTitle(draft.title);
+            setProjDesc(draft.description);
+            setProjCat(draft.category);
+            setProjTags(draft.tags.join(", "));
+            setProjPublic(true);
+          }}
+          onDirectPublishBlog={onAddBlog}
+          onDirectPublishProject={onAddProject}
+          user={user}
+        />
       )}
 
       {/* Projects Management Sub Tab */}
@@ -433,13 +611,23 @@ export default function AdminPanel({
                 <h3 className="font-sans font-bold text-slate-950">
                   {editingProject ? "Update Portfolio Project" : "Add New Showcase Entry"}
                 </h3>
-                <button
-                  type="button"
-                  onClick={resetProjectForm}
-                  className="p-1.5 hover:bg-slate-100 rounded-full text-slate-500 transition-colors"
-                >
-                  <X className="w-5 h-5" />
-                </button>
+                <div className="flex items-center space-x-2">
+                  <button
+                    type="button"
+                    onClick={() => setActiveSubTab("ai_studio")}
+                    className="flex items-center space-x-1 px-2.5 py-1 rounded-lg border border-purple-200 bg-purple-50 hover:bg-purple-100 text-purple-800 text-xs font-semibold transition-colors cursor-pointer"
+                  >
+                    <Sparkles className="w-3.5 h-3.5 text-purple-600" />
+                    <span>AI Case Study Studio</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={resetProjectForm}
+                    className="p-1.5 hover:bg-slate-100 rounded-full text-slate-500 transition-colors"
+                  >
+                    <X className="w-5 h-5" />
+                  </button>
+                </div>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
@@ -656,13 +844,23 @@ export default function AdminPanel({
                 <h3 className="font-sans font-bold text-slate-950">
                   {editingBlog ? "Edit Technical Article" : "Write Technical Article"}
                 </h3>
-                <button
-                  type="button"
-                  onClick={resetBlogForm}
-                  className="p-1.5 hover:bg-slate-100 rounded-full text-slate-500 transition-colors"
-                >
-                  <X className="w-5 h-5" />
-                </button>
+                <div className="flex items-center space-x-2">
+                  <button
+                    type="button"
+                    onClick={() => setActiveSubTab("ai_studio")}
+                    className="flex items-center space-x-1 px-2.5 py-1 rounded-lg border border-purple-200 bg-purple-50 hover:bg-purple-100 text-purple-800 text-xs font-semibold transition-colors cursor-pointer"
+                  >
+                    <Sparkles className="w-3.5 h-3.5 text-purple-600" />
+                    <span>AI Article Studio</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={resetBlogForm}
+                    className="p-1.5 hover:bg-slate-100 rounded-full text-slate-500 transition-colors"
+                  >
+                    <X className="w-5 h-5" />
+                  </button>
+                </div>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
@@ -716,7 +914,34 @@ export default function AdminPanel({
                 </div>
 
                 <div className="sm:col-span-2 space-y-1.5">
-                  <label className="text-xs font-bold text-slate-500 uppercase">Short Summary *</label>
+                  <div className="flex items-center justify-between">
+                    <label className="text-xs font-bold text-slate-500 uppercase">Short Summary *</label>
+                    {blogContent.trim().length > 30 && (
+                      <button
+                        type="button"
+                        onClick={async () => {
+                          try {
+                            const res = await fetch("/api/ai/summarize-content", {
+                              method: "POST",
+                              headers: { "Content-Type": "application/json" },
+                              body: JSON.stringify({ content: blogContent, title: blogTitle })
+                            });
+                            if (res.ok) {
+                              const data = await res.json();
+                              if (data.summary) setBlogSummary(data.summary);
+                              if (data.suggestedTags?.length && !blogTags) setBlogTags(data.suggestedTags.join(", "));
+                            }
+                          } catch (e) {
+                            console.error(e);
+                          }
+                        }}
+                        className="text-[11px] text-indigo-600 hover:text-indigo-700 font-bold flex items-center space-x-1 cursor-pointer"
+                      >
+                        <Sparkles className="w-3 h-3" />
+                        <span>Auto-Summarize from Markdown</span>
+                      </button>
+                    )}
+                  </div>
                   <input
                     type="text"
                     required

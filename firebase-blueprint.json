@@ -46,6 +46,41 @@
         "videosFolderUrl": { "type": "string", "maxLength": 500 },
         "graphicsFolderUrl": { "type": "string", "maxLength": 500 }
       }
+    },
+    "ProjectBrief": {
+      "title": "ProjectBrief",
+      "description": "Customer project brief submitted from checkout modal",
+      "type": "object",
+      "properties": {
+        "serviceId": { "type": "string", "maxLength": 100 },
+        "serviceTitle": { "type": "string", "maxLength": 200 },
+        "name": { "type": "string", "maxLength": 100 },
+        "businessName": { "type": "string", "maxLength": 100 },
+        "email": { "type": "string", "maxLength": 200 },
+        "phone": { "type": "string", "maxLength": 50 },
+        "brief": { "type": "string", "maxLength": 5000 },
+        "referenceCode": { "type": "string", "maxLength": 100 },
+        "createdAt": { "type": "string", "maxLength": 50 },
+        "status": { "type": "string", "maxLength": 50 }
+      },
+      "required": ["serviceId", "serviceTitle", "name", "email", "phone", "brief", "referenceCode", "createdAt", "status"]
+    },
+    "WorkspaceLead": {
+      "title": "WorkspaceLead",
+      "description": "Customer lead inquiry submitted from contact page",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string", "maxLength": 100 },
+        "businessName": { "type": "string", "maxLength": 100 },
+        "email": { "type": "string", "maxLength": 200 },
+        "phone": { "type": "string", "maxLength": 50 },
+        "service": { "type": "string", "maxLength": 150 },
+        "brief": { "type": "string", "maxLength": 5000 },
+        "quoteCode": { "type": "string", "maxLength": 100 },
+        "createdAt": { "type": "string", "maxLength": 50 },
+        "status": { "type": "string", "maxLength": 50 }
+      },
+      "required": ["name", "email", "phone", "service", "quoteCode", "createdAt", "status"]
     }
   },
   "firestore": {
@@ -60,6 +95,14 @@
     "/settings/{settingsId}": {
       "schema": "Settings",
       "description": "App settings for Google Drive Sync"
+    },
+    "/project_briefs/{briefId}": {
+      "schema": "ProjectBrief",
+      "description": "Client Project Briefs"
+    },
+    "/workspace_leads/{leadId}": {
+      "schema": "WorkspaceLead",
+      "description": "Client Inbound Leads"
     }
   }
 }
